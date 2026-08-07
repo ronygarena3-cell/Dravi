@@ -1,1 +1,1237 @@
-amén cristo biene...
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dravi — Editor de imágenes en línea gratis | Luz, filtros y recorte de fondo</title>
+<meta name="description" content="Edita tus fotos gratis desde el navegador con Dravi: ajusta luz y color, aplica filtros, quita el fondo y agrega texto o marca de agua. Sin instalar nada y sin perder calidad al exportar.">
+<link rel="icon" type="image/png" href="https://i.imgur.com/2Y2OzxW.png">
+<link rel="apple-touch-icon" href="https://i.imgur.com/2Y2OzxW.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Dravi — Editor de imágenes en línea gratis">
+<meta property="og:description" content="Ajusta luz y color, aplica filtros, quita el fondo y agrega texto a tus fotos. Todo desde el navegador, sin instalar nada.">
+<meta property="og:image" content="https://i.imgur.com/2Y2OzxW.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Dravi — Editor de imágenes en línea gratis">
+<meta name="twitter:description" content="Ajusta luz y color, aplica filtros, quita el fondo y agrega texto a tus fotos, gratis desde el navegador.">
+<meta name="twitter:image" content="https://i.imgur.com/2Y2OzxW.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg: #15130f;
+    --bg-2: #1b1811;
+    --panel: #201c15;
+    --panel-2: #2a2418;
+    --accent: #e8a33d;
+    --accent-dim: #b9822f;
+    --rust: #a24f3a;
+    --cream: #f2ece0;
+    --muted: #c4b9a3;
+    --line: rgba(242,236,224,0.18);
+    --line-strong: rgba(242,236,224,0.32);
+    --radius: 3px;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--cream);
+    font-family:'Inter', sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::selection{ background:var(--accent); color:#15130f; }
+
+  h1,h2,h3{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    line-height:1.05;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .mono{
+    font-family:'JetBrains Mono', monospace;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+  }
+  a{ color:inherit; }
+  button{ font-family:inherit; }
+
+  /* ---------- film-strip side rails (signature element) ---------- */
+  .rail{
+    position:fixed;
+    top:0; bottom:0;
+    width:26px;
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        #0d0b08 0px, #0d0b08 14px,
+        transparent 14px, transparent 32px
+      );
+    z-index:40;
+    pointer-events:none;
+    opacity:0.9;
+  }
+  .rail::before, .rail::after{
+    content:"";
+    position:absolute;
+    top:0; bottom:0;
+    width:1px;
+    background:var(--line);
+  }
+  .rail.left{ left:0; }
+  .rail.right{ right:0; }
+  .rail .hole{
+    position:absolute;
+    left:50%; transform:translateX(-50%);
+    width:9px; height:9px;
+    border-radius:2px;
+    background:var(--bg);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.6);
+  }
+  @media (max-width: 820px){ .rail{ display:none; } }
+
+  .frame-counter{
+    position:fixed;
+    right:36px;
+    bottom:24px;
+    z-index:41;
+    font-size:11px;
+    color:var(--muted);
+    background:rgba(21,19,15,0.7);
+    backdrop-filter: blur(4px);
+    padding:6px 10px;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+  }
+  .frame-counter span{ color:var(--accent); }
+  @media (max-width: 820px){ .frame-counter{ right:14px; } }
+
+  /* ---------- layout shell ---------- */
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 60px;
+  }
+  @media (max-width: 900px){ .wrap{ padding:0 24px; } }
+
+  /* ---------- nav ---------- */
+  header.nav{
+    position:fixed;
+    top:0; left:0; right:0;
+    z-index:50;
+    padding:22px 60px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    transition: background .3s ease, border-color .3s ease, padding .3s ease;
+    border-bottom:1px solid transparent;
+  }
+  header.nav.solid{
+    background:rgba(21,19,15,0.86);
+    backdrop-filter: blur(10px);
+    border-bottom:1px solid var(--line);
+    padding:14px 60px;
+  }
+  @media (max-width: 900px){ header.nav, header.nav.solid{ padding:16px 24px; } }
+
+  .logo{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    font-family:'Fraunces', serif;
+    font-weight:700;
+    font-size:22px;
+    letter-spacing:-0.01em;
+  }
+  .logo em{
+    font-style:italic;
+    color:var(--accent);
+    font-weight:500;
+    font-size:12px;
+    letter-spacing:0.02em;
+  }
+
+  nav.links{
+    display:flex;
+    gap:34px;
+    font-size:14px;
+    color:var(--muted);
+  }
+  nav.links a{ text-decoration:none; transition:color .2s; }
+  nav.links a:hover{ color:var(--cream); }
+  @media (max-width: 760px){ nav.links{ display:none; } }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border-radius:var(--radius);
+    padding:11px 22px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    border:1px solid transparent;
+    transition: transform .15s ease, background .2s ease, border-color .2s ease;
+    white-space:nowrap;
+  }
+  .btn:active{ transform:scale(0.97); }
+  .btn-primary{ background:var(--accent); color:#1a1610; }
+  .btn-primary:hover{ background:#f0af52; }
+  .btn-ghost{ background:transparent; color:var(--cream); border-color:var(--line-strong); }
+  .btn-ghost:hover{ border-color:var(--accent); color:var(--accent); }
+  .btn-block{ width:100%; justify-content:center; }
+
+  /* ---------- hero ---------- */
+  .hero{
+    padding:190px 0 120px;
+    position:relative;
+  }
+  .hero .wrap{
+    display:grid;
+    grid-template-columns:1.05fr 0.95fr;
+    gap:60px;
+    align-items:center;
+  }
+  @media (max-width: 900px){
+    .hero{ padding:140px 0 80px; }
+    .hero .wrap{ grid-template-columns:1fr; }
+  }
+  .eyebrow{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:var(--accent);
+    font-size:11px;
+    margin-bottom:22px;
+  }
+  .eyebrow .dot{
+    width:6px; height:6px; border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 8px var(--accent);
+  }
+  .hero h1{
+    font-size:clamp(40px, 5.4vw, 68px);
+    max-width:640px;
+  }
+  .hero h1 i{ color:var(--accent); font-style:italic; font-weight:500; }
+  .hero p.lead{
+    margin-top:24px;
+    font-size:17px;
+    line-height:1.7;
+    color:var(--muted);
+    max-width:460px;
+  }
+  .hero .cta-row{
+    margin-top:34px;
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .hero-figure{
+    position:relative;
+    border-radius:var(--radius);
+    overflow:hidden;
+    border:1px solid var(--line-strong);
+  }
+  .hero-figure img{
+    display:block;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    filter:grayscale(0.5) sepia(0.18) contrast(1.05) brightness(0.92);
+  }
+  .hero-figure .tag{
+    position:absolute;
+    left:16px; bottom:16px;
+    background:rgba(21,19,15,0.75);
+    backdrop-filter:blur(6px);
+    border:1px solid var(--line);
+    padding:6px 10px;
+    font-size:10.5px;
+    color:var(--accent);
+    border-radius:var(--radius);
+  }
+
+  .trust-row{
+    margin-top:56px;
+    display:flex;
+    gap:40px;
+    flex-wrap:wrap;
+    color:var(--muted);
+    font-size:12.5px;
+  }
+  .trust-row div{ display:flex; align-items:center; gap:8px; }
+  .trust-row strong{ color:var(--cream); font-weight:600; }
+
+  /* ---------- frame sections ---------- */
+  .frame{
+    padding:120px 0;
+    border-top:1px solid var(--line);
+    position:relative;
+  }
+  .frame .wrap{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:70px;
+    align-items:center;
+  }
+  .frame.reverse .wrap{ direction:rtl; }
+  .frame.reverse .wrap > *{ direction:ltr; }
+  @media (max-width: 900px){
+    .frame{ padding:80px 0; }
+    .frame .wrap, .frame.reverse .wrap{ grid-template-columns:1fr; direction:ltr; }
+  }
+
+  .frame-label{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    color:var(--accent-dim);
+    font-size:11px;
+    margin-bottom:20px;
+  }
+  .frame-label .num{ color:var(--accent); font-size:13px; }
+
+  .frame h2{
+    font-size:clamp(28px, 3.4vw, 38px);
+    max-width:420px;
+  }
+  .frame p{
+    margin-top:18px;
+    color:var(--muted);
+    font-size:15.5px;
+    line-height:1.75;
+    max-width:420px;
+  }
+  .spec-list{
+    margin-top:26px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .spec-list li{
+    list-style:none;
+    display:flex;
+    gap:10px;
+    font-size:13.5px;
+    color:var(--cream);
+  }
+  .spec-list li::before{
+    content:"";
+    width:14px; height:1px;
+    background:var(--accent);
+    margin-top:9px;
+    flex-shrink:0;
+  }
+
+  .figure{
+    position:relative;
+    border-radius:var(--radius);
+    overflow:hidden;
+    border:1px solid var(--line-strong);
+    aspect-ratio:4/3;
+  }
+  .figure img{
+    width:100%; height:100%; object-fit:cover;
+    filter:grayscale(0.55) sepia(0.15) contrast(1.05) brightness(0.9);
+    transition:filter .5s ease, transform .6s ease;
+  }
+  .figure:hover img{
+    filter:grayscale(0) sepia(0) contrast(1.02) brightness(1);
+    transform:scale(1.03);
+  }
+  .figure .corner{
+    position:absolute; top:14px; right:14px;
+    font-size:10px; color:var(--muted);
+    background:rgba(21,19,15,0.7);
+    border:1px solid var(--line);
+    padding:4px 8px;
+    border-radius:var(--radius);
+  }
+
+  /* ---------- wide video feature ---------- */
+  .feature-wide{
+    padding:130px 0;
+    border-top:1px solid var(--line);
+    position:relative;
+    overflow:hidden;
+  }
+  .feature-wide .bg{
+    position:absolute; inset:0;
+    z-index:0;
+  }
+  .feature-wide .bg img{
+    width:100%; height:100%; object-fit:cover;
+    filter:grayscale(0.7) brightness(0.32) contrast(1.1);
+  }
+  .feature-wide .bg::after{
+    content:"";
+    position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(21,19,15,0.4), rgba(21,19,15,0.92));
+  }
+  .feature-wide .wrap{ position:relative; z-index:1; text-align:center; }
+  .feature-wide h2{
+    font-size:clamp(30px, 4.2vw, 46px);
+    max-width:640px;
+    margin:0 auto;
+  }
+  .feature-wide p{
+    max-width:480px;
+    margin:20px auto 0;
+    color:var(--muted);
+    font-size:15.5px;
+    line-height:1.75;
+  }
+  .feature-wide .cta-row{
+    margin-top:32px;
+    display:flex;
+    justify-content:center;
+    gap:16px;
+  }
+
+  /* ---------- final CTA ---------- */
+  .final-cta{
+    padding:130px 0;
+    border-top:1px solid var(--line);
+    text-align:center;
+  }
+  .final-cta h2{
+    font-size:clamp(30px, 4.6vw, 50px);
+    max-width:600px;
+    margin:0 auto;
+  }
+  .final-cta .mono{ color:var(--accent); font-size:11px; display:block; margin-bottom:18px; }
+  .final-cta .cta-row{ margin-top:34px; display:flex; justify-content:center; gap:16px; }
+
+  footer{
+    border-top:1px solid var(--line);
+    padding:36px 0 60px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    color:var(--muted);
+    font-size:12.5px;
+    flex-wrap:wrap;
+    gap:16px;
+  }
+  footer .logo{ font-size:16px; }
+
+  /* ---------- auth modal ---------- */
+  .modal-backdrop{
+    position:fixed; inset:0;
+    background:rgba(10,9,6,0.72);
+    backdrop-filter:blur(4px);
+    z-index:100;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .modal-backdrop.open{ display:flex; }
+
+  .modal{
+    width:100%;
+    max-width:400px;
+    background:var(--panel);
+    border:1px solid var(--line-strong);
+    border-radius:6px;
+    padding:34px 30px 30px;
+    position:relative;
+    box-shadow:0 30px 80px rgba(0,0,0,0.5);
+  }
+  .modal::before{
+    content:"";
+    position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg, var(--accent), var(--rust), var(--accent));
+    border-radius:6px 6px 0 0;
+  }
+  .modal-close{
+    position:absolute; top:16px; right:16px;
+    background:none; border:none; color:var(--muted);
+    font-size:18px; cursor:pointer; line-height:1;
+    padding:4px;
+  }
+  .modal-close:hover{ color:var(--cream); }
+
+  .modal .mono.tag{
+    color:var(--accent); font-size:10.5px; display:block; margin-bottom:10px;
+  }
+  .modal h3{ font-size:24px; margin-bottom:6px; }
+  .modal .sub{ color:var(--muted); font-size:13px; margin-bottom:26px; }
+
+  .tabs{
+    display:flex;
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    margin-bottom:22px;
+    overflow:hidden;
+  }
+  .tabs button{
+    flex:1;
+    background:transparent;
+    border:none;
+    color:var(--muted);
+    padding:10px 0;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .2s, color .2s;
+  }
+  .tabs button.active{ background:var(--accent); color:#1a1610; }
+
+  .field{ margin-bottom:14px; }
+  .field label{
+    display:block;
+    font-size:11.5px;
+    color:var(--muted);
+    margin-bottom:6px;
+    letter-spacing:0.03em;
+  }
+  .field input{
+    width:100%;
+    background:var(--bg-2);
+    border:1px solid var(--line-strong);
+    color:var(--cream);
+    padding:11px 12px;
+    border-radius:var(--radius);
+    font-size:14px;
+    font-family:inherit;
+    outline:none;
+    transition:border-color .2s;
+  }
+  .field input:focus{ border-color:var(--accent); }
+  .field input::placeholder{ color:#8a8071; }
+
+  .modal .btn-primary{ margin-top:8px; }
+
+  .divider{
+    display:flex; align-items:center; gap:12px;
+    margin:20px 0;
+    color:var(--muted);
+    font-size:11px;
+  }
+  .divider::before, .divider::after{
+    content:""; flex:1; height:1px; background:var(--line);
+  }
+
+  .btn-google{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    width:100%;
+    background:var(--cream);
+    color:#1a1610;
+    border-radius:var(--radius);
+    padding:11px 16px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    border:1px solid var(--line-strong);
+    transition:background .2s;
+  }
+  .btn-google:hover{ background:#e6dfd0; }
+  .btn-google svg{ width:18px; height:18px; }
+
+  .form-msg{
+    font-size:12.5px;
+    margin-top:14px;
+    padding:10px 12px;
+    border-radius:var(--radius);
+    display:none;
+    line-height:1.5;
+  }
+  .form-msg.show{ display:block; }
+  .form-msg.error{ background:rgba(162,79,58,0.18); color:#e79a86; border:1px solid rgba(162,79,58,0.4); }
+  .form-msg.ok{ background:rgba(232,163,61,0.15); color:var(--accent); border:1px solid rgba(232,163,61,0.35); }
+
+  /* ---------- app shell (post-login) ---------- */
+  #app-shell{
+    display:none;
+    min-height:100vh;
+    background:var(--bg);
+  }
+  #app-shell.open{ display:block; }
+  #landing.hidden{ display:none; }
+
+  .app-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 28px;
+    border-bottom:1px solid var(--line);
+    background:var(--bg-2);
+  }
+  .app-header-left{ display:flex; align-items:center; gap:16px; }
+
+  .hamburger{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:5px;
+    width:34px; height:34px;
+    background:transparent;
+    border:1px solid var(--line-strong);
+    border-radius:var(--radius);
+    cursor:pointer;
+    padding:0;
+    align-items:center;
+  }
+  .hamburger span{
+    display:block;
+    width:16px; height:2px;
+    background:var(--cream);
+    border-radius:2px;
+    transition:transform .25s ease, opacity .2s ease;
+  }
+  .hamburger:hover{ border-color:var(--accent); }
+  .hamburger:hover span{ background:var(--accent); }
+  .hamburger.active span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+  .hamburger.active span:nth-child(2){ opacity:0; }
+  .hamburger.active span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+  .app-body{ transition: grid-template-columns .22s ease; }
+  @media (min-width: 781px){
+    .app-body.collapsed{ grid-template-columns: 64px 1fr; }
+  }
+  .app-user{
+    display:flex; align-items:center; gap:12px;
+    font-size:13px; color:var(--muted);
+  }
+  .app-user .avatar{
+    width:30px; height:30px; border-radius:50%;
+    background:var(--accent);
+    color:#1a1610;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:13px;
+    overflow:hidden;
+    flex-shrink:0;
+  }
+  .app-user .avatar img{ width:100%; height:100%; object-fit:cover; }
+
+  .app-body{
+    display:grid;
+    grid-template-columns:250px 1fr;
+    min-height:calc(100vh - 65px);
+  }
+  .sidebar-backdrop{ display:none; }
+
+  @media (max-width: 780px){
+    .app-body{ grid-template-columns:1fr; position:relative; }
+    .app-body .app-sidebar{
+      position:fixed;
+      top:65px; left:0;
+      width:78%;
+      max-width:290px;
+      max-height:calc(100vh - 65px - 18px);
+      z-index:60;
+      overflow-y:auto;
+      border-right:1px solid var(--line-strong);
+      border-bottom:1px solid var(--line-strong);
+      border-radius:0 0 10px 0;
+      box-shadow:16px 16px 40px rgba(0,0,0,0.55);
+      transform:translateX(-100%);
+      transition:transform .25s ease;
+    }
+    .app-body.collapsed .app-sidebar{ transform:translateX(0); }
+    .app-body.collapsed .sidebar-group-title{ display:block; }
+    .app-body.collapsed .menu-items a{ justify-content:flex-start; padding:10px 20px; }
+    .app-body.collapsed .menu-items a .label,
+    .app-body.collapsed .menu-items a .soon{ display:inline; }
+
+    .sidebar-backdrop{
+      position:fixed;
+      top:65px; left:0; right:0; bottom:0;
+      background:rgba(10,9,6,0.6);
+      z-index:55;
+    }
+    .app-body.collapsed .sidebar-backdrop{ display:block; }
+  }
+
+  .app-sidebar{
+    border-right:1px solid var(--line);
+    padding:16px 0;
+    background:var(--panel);
+    overflow:hidden;
+  }
+
+  .sidebar-group{ margin-bottom:6px; }
+  .sidebar-group-title{
+    font-size:10px;
+    color:var(--muted);
+    padding:16px 22px 8px;
+    white-space:nowrap;
+  }
+  @media (min-width: 781px){
+    .app-body.collapsed .sidebar-group-title{ display:none; }
+  }
+
+  .menu-items{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    padding:0 10px;
+  }
+  .menu-items a{
+    display:flex; align-items:center; gap:13px;
+    text-decoration:none;
+    color:var(--muted);
+    font-size:13.5px;
+    padding:10px 12px;
+    border-radius:var(--radius);
+    white-space:nowrap;
+    transition:background .15s, color .15s;
+  }
+  .menu-items a svg{ width:18px; height:18px; flex-shrink:0; }
+  .menu-items a:hover{ background:var(--panel-2); color:var(--cream); }
+  .menu-items a.active{ background:rgba(232,163,61,0.13); color:var(--accent); }
+  .menu-items a .label{ flex:1; overflow:hidden; text-overflow:ellipsis; }
+  .menu-items a .soon{
+    font-family:'JetBrains Mono', monospace;
+    font-size:8.5px;
+    color:var(--accent-dim);
+    border:1px solid var(--line-strong);
+    padding:2px 6px;
+    border-radius:2px;
+  }
+  @media (min-width: 781px){
+    .app-body.collapsed .menu-items a{ justify-content:center; padding:11px; }
+    .app-body.collapsed .menu-items a .label,
+    .app-body.collapsed .menu-items a .soon{ display:none; }
+  }
+
+
+  .menu-items a.signout-link{ color:var(--rust); }
+  .menu-items a.signout-link:hover{ background:rgba(162,79,58,0.14); color:#e79a86; }
+
+  .app-main{
+    padding:60px 40px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+  }
+  .app-main .empty{
+    max-width:420px;
+  }
+  .app-main .empty .mono{ color:var(--accent); font-size:11px; display:block; margin-bottom:16px; }
+  .app-main .empty h2{ font-size:26px; margin-bottom:12px; }
+  .app-main .empty p{ color:var(--muted); font-size:14px; line-height:1.7; }
+
+  @media (max-width: 480px){
+    .app-header{ padding:12px 14px; gap:10px; }
+    .app-header-left{ gap:10px; }
+    .app-header-left .logo{ font-size:15px; }
+    .app-user{ gap:8px; }
+    .app-user span#userName{ max-width:110px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    *{ animation:none !important; transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="rail left" id="railLeft"></div>
+<div class="rail right" id="railRight"></div>
+<div class="frame-counter">FRAME <span id="frameNum">00</span> / 06</div>
+
+<!-- ================= LANDING ================= -->
+<div id="landing">
+
+  <header class="nav" id="siteNav">
+    <div class="logo">Dravi <em>cuarto oscuro</em></div>
+    <nav class="links">
+      <a href="#ajustes">Ajustes</a>
+      <a href="#fondo">Fondo</a>
+      <a href="#video">Video</a>
+    </nav>
+    <button class="btn btn-ghost" onclick="openModal('login')">Iniciar sesión</button>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow mono"><span class="dot"></span> Editor de imágenes en línea</div>
+        <h1>Revela lo que tu <i>imagen</i> puede ser</h1>
+        <p class="lead">Sube una foto, ajusta la luz, quita el fondo, agrega texto. Todo desde el navegador, sin instalar nada y sin perder calidad al exportar.</p>
+        <div class="cta-row">
+          <button class="btn btn-primary" onclick="openModal('signup')">Empezar gratis</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('ajustes').scrollIntoView()">Ver cómo funciona</button>
+        </div>
+        <div class="trust-row">
+          <div><strong>Sin instalación.</strong> Funciona en el navegador</div>
+          <div><strong>Sin marcas de agua.</strong> Exporta como quieras</div>
+        </div>
+      </div>
+      <div class="hero-figure">
+        <img src="https://picsum.photos/id/250/900/1000" alt="Cámara y rollo de película sobre una mesa de madera">
+        <div class="tag mono">Dravi — 01</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="frame" id="ajustes">
+    <div class="wrap">
+      <div>
+        <div class="frame-label mono"><span class="num">01</span> Luz y color</div>
+        <h2>Cada ajuste, a la vista</h2>
+        <p>Mueve un control y la imagen cambia al instante. Brillo, contraste y saturación, sin menús escondidos ni pasos extra.</p>
+        <ul class="spec-list">
+          <li>Brillo, contraste y saturación con vista previa en vivo</li>
+          <li>Recorte libre o proporciones fijas (1:1, 4:5, 16:9)</li>
+          <li>Rotar y voltear sin perder resolución</li>
+        </ul>
+      </div>
+      <div class="figure">
+        <img src="https://picsum.photos/id/1074/900/700" alt="Retrato en blanco y negro con ajuste de luz">
+        <div class="corner mono">f/2.8 · ISO 100</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="frame reverse">
+    <div class="wrap">
+      <div>
+        <div class="frame-label mono"><span class="num">02</span> Filtros</div>
+        <h2>Un tono para cada foto</h2>
+        <p>Filtros pensados como los de un laboratorio real: blanco y negro con grano, sepia cálido, contraste alto para retratos.</p>
+        <ul class="spec-list">
+          <li>Presets listos para usar, sin curva de aprendizaje</li>
+          <li>Ajusta la intensidad de cada filtro</li>
+          <li>Compara antes y después con un solo toque</li>
+        </ul>
+      </div>
+      <div class="figure">
+        <img src="https://picsum.photos/id/1062/900/700" alt="Rollo de película expuesto a la luz">
+        <div class="corner mono">Filtro — 002</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="frame" id="fondo">
+    <div class="wrap">
+      <div>
+        <div class="frame-label mono"><span class="num">03</span> Recorte inteligente</div>
+        <h2>Fuera el fondo, queda lo importante</h2>
+        <p>Sube tu foto y descarga la misma imagen sin fondo, lista en PNG transparente. Útil para productos, perfiles y memes.</p>
+        <ul class="spec-list">
+          <li>Detección automática del sujeto principal</li>
+          <li>Descarga en PNG con fondo transparente</li>
+          <li>Reemplaza el fondo por un color o imagen propia</li>
+        </ul>
+      </div>
+      <div class="figure">
+        <img src="https://picsum.photos/id/1005/900/700" alt="Retrato de estudio con fondo neutro">
+        <div class="corner mono">Recorte — 003</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="frame reverse">
+    <div class="wrap">
+      <div>
+        <div class="frame-label mono"><span class="num">04</span> Texto y marca</div>
+        <h2>Tu firma, sobre la imagen</h2>
+        <p>Agrega texto, fecha o un logo pequeño en la esquina. Elige tipografía, color y posición sin salir del editor.</p>
+        <ul class="spec-list">
+          <li>Texto con tipografía, color y tamaño ajustables</li>
+          <li>Marca de agua reutilizable en todas tus fotos</li>
+          <li>Posición libre, arrastrando con el dedo o el mouse</li>
+        </ul>
+      </div>
+      <div class="figure">
+        <img src="https://picsum.photos/id/96/900/700" alt="Hoja de contacto de negativos de película">
+        <div class="corner mono">Texto — 004</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="feature-wide" id="video">
+    <div class="bg"><img src="https://picsum.photos/id/1039/1800/900" alt="Fotógrafo trabajando en un cuarto oscuro"></div>
+    <div class="wrap">
+      <div class="frame-label mono" style="justify-content:center"><span class="num">05</span> De imagen a video</div>
+      <h2>Una foto quieta, un video que se mueve</h2>
+      <p>Elige una plantilla, sube tu imagen y descarga un video corto listo para compartir. Sin grabar nada, sin editar cuadro por cuadro.</p>
+      <div class="cta-row">
+        <button class="btn btn-primary" onclick="openModal('signup')">Probar una plantilla</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="final-cta">
+    <div class="wrap">
+      <span class="mono">Frame 06 — Última toma</span>
+      <h2>Tu primera edición no toma más de un minuto</h2>
+      <div class="cta-row">
+        <button class="btn btn-primary" onclick="openModal('signup')">Crear cuenta gratis</button>
+        <button class="btn btn-ghost" onclick="openModal('login')">Ya tengo cuenta</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap" style="display:flex; justify-content:space-between; align-items:center; width:100%; flex-wrap:wrap; gap:16px;">
+      <div class="logo">Dravi</div>
+      <div>© 2026 Dravi. Editor de imágenes en línea.</div>
+    </div>
+  </footer>
+
+</div>
+
+<!-- ================= APP SHELL (post-login) ================= -->
+<div id="app-shell">
+  <header class="app-header">
+    <div class="app-header-left">
+      <button class="hamburger" id="menuToggle" aria-label="Mostrar u ocultar menú" onclick="toggleSidebar()">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="logo" style="font-size:18px;">Dravi</div>
+    </div>
+    <div class="app-user">
+      <div class="avatar" id="userAvatar">D</div>
+      <span id="userName">—</span>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <div class="sidebar-backdrop" onclick="toggleSidebar()"></div>
+    <aside class="app-sidebar">
+      <div class="sidebar-group">
+        <div class="menu-items">
+          <a href="#" class="active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+            <span class="label">Inicio</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-group-title mono">Editar</div>
+        <div class="menu-items">
+          <a href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="7" cy="18" r="2"/></svg>
+            <span class="label">Ajustes de luz</span><span class="soon">pronto</span>
+          </a>
+          <a href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 7 6 11a6 6 0 1 1-12 0c0-4 6-11 6-11z"/></svg>
+            <span class="label">Filtros</span><span class="soon">pronto</span>
+          </a>
+          <a href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="6" cy="6" r="2.3"/><circle cx="6" cy="18" r="2.3"/><line x1="8.3" y1="7.5" x2="19" y2="18"/><line x1="19" y1="6" x2="8.3" y2="16.5"/></svg>
+            <span class="label">Recortar fondo</span><span class="soon">pronto</span>
+          </a>
+          <a href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 6 4 4 20 4 20 6"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="9" y1="20" x2="15" y2="20"/></svg>
+            <span class="label">Texto y marca</span><span class="soon">pronto</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-group-title mono">Convertir</div>
+        <div class="menu-items">
+          <a href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="1"/><line x1="7" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="17" y2="20"/><line x1="3" y1="9" x2="7" y2="9"/><line x1="3" y1="15" x2="7" y2="15"/><line x1="17" y1="9" x2="21" y2="9"/><line x1="17" y1="15" x2="21" y2="15"/></svg>
+            <span class="label">Imagen a video</span><span class="soon">pronto</span>
+          </a>
+          <a href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            <span class="label">Plantillas</span><span class="soon">pronto</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-group-title mono">Archivos</div>
+        <div class="menu-items">
+          <a href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>
+            <span class="label">Subidos</span><span class="soon">pronto</span>
+          </a>
+          <a href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 6"/></svg>
+            <span class="label">Papelera</span><span class="soon">pronto</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="sidebar-group">
+        <div class="sidebar-group-title mono">Cuenta</div>
+        <div class="menu-items">
+          <a href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c1.2-4 5-5.5 7-5.5S17.8 16 19 20"/></svg>
+            <span class="label">Perfil</span><span class="soon">pronto</span>
+          </a>
+          <a href="#">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 12c0-.4 0-.8-.1-1.2l2-1.5-2-3.4-2.3.9a7 7 0 0 0-2-1.2L14 3h-4l-.6 2.6a7 7 0 0 0-2 1.2l-2.3-.9-2 3.4 2 1.5a7.4 7.4 0 0 0 0 2.4l-2 1.5 2 3.4 2.3-.9c.6.5 1.3.9 2 1.2L10 21h4l.6-2.6c.7-.3 1.4-.7 2-1.2l2.3.9 2-3.4-2-1.5c.1-.4.1-.8.1-1.2z"/></svg>
+            <span class="label">Preferencias</span><span class="soon">pronto</span>
+          </a>
+          <a href="#" onclick="doSignOut(); return false;" class="signout-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            <span class="label">Cerrar sesión</span>
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="app-main">
+      <div class="empty">
+        <span class="mono">Rollo cargado</span>
+        <h2>Bienvenido a Dravi</h2>
+        <p>Tu cuenta ya está lista. Las herramientas de edición se irán activando aquí — por ahora, explora el menú de la izquierda.</p>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ================= AUTH MODAL ================= -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this) closeModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <span class="mono tag">Dravi</span>
+    <h3 id="modalTitle">Bienvenido de nuevo</h3>
+    <p class="sub" id="modalSub">Entra a tu cuenta para seguir editando.</p>
+
+    <div class="tabs">
+      <button id="tabLogin" class="active" onclick="switchTab('login')">Iniciar sesión</button>
+      <button id="tabSignup" onclick="switchTab('signup')">Crear cuenta</button>
+    </div>
+
+    <button class="btn-google" onclick="doGoogleAuth()">
+      <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.5 29.5 3.5 24 3.5 12.7 3.5 3.5 12.7 3.5 24S12.7 44.5 24 44.5 44.5 35.3 44.5 24c0-1.2-.1-2.4-.3-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 19 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.5 5.5 29.5 3.5 24 3.5c-7.5 0-13.9 4.3-17.1 10.6z"/><path fill="#4CAF50" d="M24 44.5c5.4 0 10.3-1.8 14.1-5l-6.5-5.5C29.6 35.6 27 36.5 24 36.5c-5.3 0-9.7-3.4-11.3-8l-6.6 5C9.9 40.1 16.4 44.5 24 44.5z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.5 5.5C41.4 36 44.5 30.5 44.5 24c0-1.2-.1-2.4-.3-3.5z"/></svg>
+      Continuar con Google
+    </button>
+
+    <div class="divider">o con tu correo</div>
+
+    <form id="authForm" onsubmit="handleAuthSubmit(event)">
+      <div class="field" id="nameField" style="display:none;">
+        <label>Nombre</label>
+        <input type="text" id="fieldName" placeholder="Tu nombre">
+      </div>
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input type="email" id="fieldEmail" required placeholder="tú@correo.com">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="fieldPassword" required placeholder="Mínimo 6 caracteres" minlength="6">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Iniciar sesión</button>
+    </form>
+
+    <div class="form-msg" id="formMsg"></div>
+  </div>
+</div>
+
+<!-- ================= FIREBASE ================= -->
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBHT26G14krUYTcW23Ipqoo7HMkXRNXCVQ",
+    authDomain: "dravi-robert.firebaseapp.com",
+    databaseURL: "https://dravi-robert-default-rtdb.firebaseio.com",
+    projectId: "dravi-robert",
+    storageBucket: "dravi-robert.firebasestorage.app",
+    messagingSenderId: "770791088365",
+    appId: "1:770791088365:web:49d0b42ffb2c6a7ef8ece4",
+    measurementId: "G-0ECRJZVXKB"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  let currentTab = 'login';
+
+  function openModal(tab){
+    switchTab(tab);
+    document.getElementById('modalBackdrop').classList.add('open');
+  }
+  function closeModal(){
+    document.getElementById('modalBackdrop').classList.remove('open');
+    hideMsg();
+  }
+  function switchTab(tab){
+    currentTab = tab;
+    const isLogin = tab === 'login';
+    document.getElementById('tabLogin').classList.toggle('active', isLogin);
+    document.getElementById('tabSignup').classList.toggle('active', !isLogin);
+    document.getElementById('modalTitle').textContent = isLogin ? 'Bienvenido de nuevo' : 'Crea tu cuenta';
+    document.getElementById('modalSub').textContent = isLogin
+      ? 'Entra a tu cuenta para seguir editando.'
+      : 'Es gratis. Solo toma un minuto.';
+    document.getElementById('submitBtn').textContent = isLogin ? 'Iniciar sesión' : 'Crear cuenta';
+    document.getElementById('nameField').style.display = isLogin ? 'none' : 'block';
+    document.getElementById('fieldName').required = !isLogin;
+    hideMsg();
+  }
+
+  function showMsg(text, type){
+    const el = document.getElementById('formMsg');
+    el.textContent = text;
+    el.className = 'form-msg show ' + type;
+  }
+  function hideMsg(){
+    const el = document.getElementById('formMsg');
+    el.className = 'form-msg';
+  }
+
+  function friendlyError(code){
+    const map = {
+      'auth/invalid-email': 'Ese correo no parece válido.',
+      'auth/user-not-found': 'No encontramos una cuenta con ese correo.',
+      'auth/wrong-password': 'La contraseña no es correcta.',
+      'auth/invalid-credential': 'Correo o contraseña incorrectos.',
+      'auth/email-already-in-use': 'Ya existe una cuenta con ese correo. Intenta iniciar sesión.',
+      'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
+      'auth/too-many-requests': 'Demasiados intentos. Espera un momento y vuelve a intentar.',
+      'auth/popup-closed-by-user': 'Cerraste la ventana de Google antes de terminar.',
+      'auth/network-request-failed': 'Revisa tu conexión a internet e intenta de nuevo.'
+    };
+    return map[code] || 'Algo salió mal. Intenta de nuevo.';
+  }
+
+  function handleAuthSubmit(e){
+    e.preventDefault();
+    const email = document.getElementById('fieldEmail').value.trim();
+    const password = document.getElementById('fieldPassword').value;
+    const name = document.getElementById('fieldName').value.trim();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    hideMsg();
+
+    if(currentTab === 'login'){
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => { closeModal(); })
+        .catch(err => showMsg(friendlyError(err.code), 'error'))
+        .finally(() => { btn.disabled = false; });
+    } else {
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(cred => cred.user.updateProfile({ displayName: name }).then(() => cred.user))
+        .then(user => { renderUserUI(user); closeModal(); })
+        .catch(err => showMsg(friendlyError(err.code), 'error'))
+        .finally(() => { btn.disabled = false; });
+    }
+  }
+
+  function doGoogleAuth(){
+    const provider = new firebase.auth.GoogleAuthProvider();
+    hideMsg();
+    auth.signInWithPopup(provider)
+      .then(() => { closeModal(); })
+      .catch(err => showMsg(friendlyError(err.code), 'error'));
+  }
+
+  function doSignOut(){
+    auth.signOut();
+  }
+
+  function renderUserUI(user){
+    const displayName = user.displayName || user.email || 'Cuenta';
+    document.getElementById('userName').textContent = displayName;
+    const initial = displayName.charAt(0).toUpperCase();
+    const avatar = document.getElementById('userAvatar');
+    if(user.photoURL){
+      avatar.innerHTML = '<img src="'+user.photoURL+'" alt="Foto de perfil">';
+    } else {
+      avatar.innerHTML = '';
+      avatar.textContent = initial;
+    }
+  }
+
+  function updateMenuIcon(){
+    const collapsedClass = document.querySelector('.app-body').classList.contains('collapsed');
+    const isDesktop = window.matchMedia('(min-width: 781px)').matches;
+    // "open" = full menu with labels visible (desktop default, or mobile drawer pulled out)
+    const menuVisuallyOpen = isDesktop ? !collapsedClass : collapsedClass;
+    document.getElementById('menuToggle').classList.toggle('active', menuVisuallyOpen);
+  }
+
+  function toggleSidebar(){
+    document.querySelector('.app-body').classList.toggle('collapsed');
+    updateMenuIcon();
+  }
+
+  auth.onAuthStateChanged(user => {
+    const landing = document.getElementById('landing');
+    const shell = document.getElementById('app-shell');
+    const rails = document.querySelectorAll('.rail, .frame-counter');
+    if(user){
+      landing.classList.add('hidden');
+      shell.classList.add('open');
+      rails.forEach(el => el.style.display = 'none');
+      renderUserUI(user);
+    } else {
+      landing.classList.remove('hidden');
+      shell.classList.remove('open');
+      rails.forEach(el => el.style.display = '');
+    }
+  });
+</script>
+
+<!-- ================= UI: scroll + rails ================= -->
+<script>
+  updateMenuIcon();
+  window.addEventListener('resize', updateMenuIcon);
+
+  document.querySelectorAll('.menu-items a:not(.signout-link)').forEach(link => {
+    link.addEventListener('click', function(e){
+      e.preventDefault();
+      document.querySelectorAll('.menu-items a.active').forEach(a => a.classList.remove('active'));
+      this.classList.add('active');
+      if(!window.matchMedia('(min-width: 781px)').matches){
+        document.querySelector('.app-body').classList.remove('collapsed');
+        updateMenuIcon();
+      }
+    });
+  });
+
+  // build sprocket holes for side rails
+  function buildRail(el){
+    const holeCount = Math.ceil(window.innerHeight / 32) + 2;
+    let html = '';
+    for(let i=0; i<holeCount; i++){
+      html += '<div class="hole" style="top:'+(i*32+11)+'px"></div>';
+    }
+    el.innerHTML = html;
+  }
+  buildRail(document.getElementById('railLeft'));
+  buildRail(document.getElementById('railRight'));
+  window.addEventListener('resize', () => {
+    buildRail(document.getElementById('railLeft'));
+    buildRail(document.getElementById('railRight'));
+  });
+
+  // nav solid on scroll
+  const nav = document.getElementById('siteNav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('solid', window.scrollY > 40);
+  });
+
+  // frame counter based on visible section
+  const frames = document.querySelectorAll('.hero, .frame, .feature-wide, .final-cta');
+  const frameNum = document.getElementById('frameNum');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        const idx = Array.from(frames).indexOf(entry.target);
+        frameNum.textContent = String(idx).padStart(2,'0');
+      }
+    });
+  }, { threshold: 0.5 });
+  frames.forEach(f => observer.observe(f));
+
+  // escape key closes modal
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape') closeModal();
+  });
+</script>
+
+</body>
+</html>
