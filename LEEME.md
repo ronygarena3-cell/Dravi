@@ -1,13 +1,25 @@
-# FormMail simple
+# FormMail — clon simple de Formspree
 
-Un servidor Node.js + Express normal. Un solo archivo (`server.js`), sin base de
-datos, sin login, sin dashboard. Guarda los envíos en `data/submissions.json` y
-manda un email de notificación con Resend.
+Un servidor Node.js + Express normal. Un solo archivo principal (`server.js`),
+sin base de datos externa (usa archivos JSON), sin framework de frontend.
 
-## Cómo funciona
-1. Pones esto en tu web: `<form action="https://tu-servidor.com/f/mi-form" method="POST">`
-2. El servidor recibe el POST, guarda el envío y te manda un email.
-3. Redirige al usuario a `/gracias.html` (o responde JSON si tu fetch pide `Accept: application/json`).
+## Cómo funciona (como Formspree)
+1. Cualquier persona entra a `https://tu-servidor.com/registro.html`, pone su
+   email, y recibe un ID único + un código `<form>` para copiar en su web.
+2. Esa persona pega el código en su propia web (la tuya o de cualquiera).
+3. Cuando alguien llena y envía ese formulario, el mensaje pasa por tu servidor,
+   se guarda, y se reenvía SOLO al email que se registró (nunca a uno que
+   invente el visitante — así no se puede usar tu servidor para mandar spam
+   a otras direcciones).
+4. El visitante ve la página `/gracias.html` al terminar.
+
+⚠️ **Importante sobre el almacenamiento**: los archivos `data/forms.json` y
+`data/submissions.json` viven en el disco del servidor. En el plan gratis de
+Render, ese disco se reinicia cada vez que el servicio se reinicia o se
+vuelve a desplegar — o sea, **se pierden los formularios registrados**. Para
+producción real hace falta una base de datos de verdad (Postgres, que Render
+también ofrece gratis) o un "Persistent Disk" de pago en Render. Dime si
+quieres que lo cambiemos a Postgres — no es mucho más código.
 
 ## Probarlo en local
 ```

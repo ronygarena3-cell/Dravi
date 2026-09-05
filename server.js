@@ -1,39 +1,60 @@
-// FormMail simple — un servidor Node/Express normal.
-// Recibe POST de formularios, guarda el envío en un archivo JSON,
-// y manda un email de notificación con Resend.
+// FormMail — un clon simple de Formspree, un solo servidor Node/Express.
+// Cualquier persona se registra con su email, recibe un ID único, y pone
+// <form action="https://tu-servidor.com/f/SU-ID"> en su propia web.
+// Los mensajes pasan por este servidor y se reenvían SOLO al email
+// registrado (no al que diga el visitante), para que no se use como spam.
 
 require('dotenv').config();
 const express = require('express');
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DATA_FILE = path.join(__dirname, 'data', 'submissions.json');
+const SUBMISSIONS_FILE = path.join(__dirname, 'data', 'submissions.json');
+const FORMS_FILE = path.join(__dirname, 'data', 'forms.json');
 
 // Middlewares
 app.use(express.urlencoded({ extended: true })); // para <form> normal
 app.use(express.json()); // por si mandan JSON (fetch/axios)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- Helpers de almacenamiento (archivo JSON simple) ---
+// --- Helpers de almacenamiento (archivos JSON simples) ---
+function leerJSON(archivo, porDefecto) {
+  if (!fs.existsSync(archivo)) return porDefecto;
+  const raw = fs.readFileSync(archivo, 'utf-8');
+  return raw ? JSON.parse(raw) : porDefecto;
+}
+
+function guardarJSON(archivo, datos) {
+  fs.mkdirSync(path.dirname(archivo), { recursive: true });
+  fs.writeFileSync(archivo, JSON.stringify(datos, null, 2));
+}
+
+function leerFormularios() {
+  return leerJSON(FORMS_FILE, {}); // { [formId]: { email, creado } }
+}
+
+function guardarFormularios(forms) {
+  guardarJSON(FORMS_FILE, forms);
+}
+
 function leerEnvios() {
-  if (!fs.existsSync(DATA_FILE)) return [];
-  const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-  return raw ? JSON.parse(raw) : [];
+  return leerJSON(SUBMISSIONS_FILE, []);
 }
 
 function guardarEnvio(envio) {
   const envios = leerEnvios();
   envios.push(envio);
-  fs.writeFileSync(DATA_FILE, JSON.stringify(envios, null, 2));
+  guardarJSON(SUBMISSIONS_FILE, envios);
 }
 
 // --- Envío de email con Resend ---
 async function enviarEmail({ to, subject, html }) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.warn('⚠️  RESEND_API_KEY no configurada, no se envía email (solo se guarda el envío).');
+    console.warn('⚠️  RESEND_API_KEY no configurada, no se envía email.');
     return;
   }
 
@@ -57,13 +78,53 @@ async function enviarEmail({ to, subject, html }) {
   }
 }
 
-// --- Ruta principal: recibe el formulario ---
-// El usuario pone en su HTML: <form action="/f/mi-formulario" method="POST">
+// --- Registro: alguien da su email y le generamos su ID único ---
+app.post('/api/registro', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ ok: false, error: 'Email inválido' });
+  }
+
+  const formId = crypto.randomBytes(4).toString('hex'); // ej: "a1b2c3d4"
+  const forms = leerFormularios();
+  forms[formId] = { email, creado: new Date().toISOString() };
+  guardarFormularios(forms);
+
+  const dominio = `${req.protocol}://${req.get('host')}`;
+  const codigo = `<form action="${dominio}/f/${formId}" method="POST">
+  <input type="text" name="nombre" placeholder="Tu nombre" required>
+  <input type="email" name="email" placeholder="Tu email" required>
+  <textarea name="mensaje" placeholder="Tu mensaje" required></textarea>
+  <button type="submit">Enviar</button>
+</form>`;
+
+  // Le mandamos su código por email también, para que no lo pierda
+  await enviarEmail({
+    to: email,
+    subject: 'Tu formulario está listo',
+    html: `<p>Tu ID de formulario es: <b>${formId}</b></p>
+           <p>Copia este código en tu web:</p>
+           <pre>${codigo.replace(/</g, '&lt;')}</pre>`,
+  });
+
+  res.json({ ok: true, formId, codigo });
+});
+
+// --- Ruta principal: recibe el formulario de un visitante ---
+// El dueño del formulario pone en SU HTML: <form action="/f/SU-ID" method="POST">
 app.post('/f/:formId', async (req, res) => {
   const { formId } = req.params;
   const datos = req.body;
 
-  // Honeypot anti-spam simple: campo oculto "empresa" que un humano nunca llena
+  const forms = leerFormularios();
+  const formulario = forms[formId];
+
+  if (!formulario) {
+    return res.status(404).send('Formulario no encontrado. Regístrate primero en /registro.html');
+  }
+
+  // Honeypot anti-spam simple: campo oculto que un humano nunca llena
   if (datos._honeypot) {
     return res.redirect(datos._redirect || '/gracias.html');
   }
@@ -77,31 +138,25 @@ app.post('/f/:formId', async (req, res) => {
 
   guardarEnvio(envio);
 
-  // A dónde llega la notificación: puedes fijarlo por variable de entorno
-  // o dejar que el propio formulario lo indique con un campo oculto "_to"
-  const destino = datos._to || process.env.NOTIFY_EMAIL;
+  // El destino SIEMPRE es el email registrado — nunca uno que mande el visitante
+  const filas = Object.entries(datos)
+    .filter(([campo]) => !campo.startsWith('_'))
+    .map(([campo, valor]) => `<tr><td><b>${campo}</b></td><td>${valor}</td></tr>`)
+    .join('');
 
-  if (destino) {
-    const filas = Object.entries(datos)
-      .filter(([campo]) => !campo.startsWith('_'))
-      .map(([campo, valor]) => `<tr><td><b>${campo}</b></td><td>${valor}</td></tr>`)
-      .join('');
+  await enviarEmail({
+    to: formulario.email,
+    subject: 'Nuevo mensaje de tu formulario',
+    html: `<table>${filas}</table>`,
+  });
 
-    await enviarEmail({
-      to: destino,
-      subject: `Nuevo mensaje del formulario "${formId}"`,
-      html: `<table>${filas}</table>`,
-    });
-  }
-
-  // Redirige a una página de gracias, o responde JSON si el cliente lo pidió
   if (req.headers.accept && req.headers.accept.includes('application/json')) {
     return res.json({ ok: true });
   }
   res.redirect(datos._redirect || '/gracias.html');
 });
 
-// --- Ruta para ver los envíos guardados (protégela con contraseña si la pones en producción) ---
+// --- Ver los envíos guardados de un formulario (protégela con contraseña antes de producción real) ---
 app.get('/api/envios/:formId', (req, res) => {
   const envios = leerEnvios().filter((e) => e.formId === req.params.formId);
   res.json(envios);
