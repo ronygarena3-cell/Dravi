@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dravi — Correo y contenido para tu web</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #10131a;
+    --bg-soft: #161a23;
+    --surface: #1b202b;
+    --surface-2: #212734;
+    --line: #2a3141;
+    --text: #e9e7e0;
+    --text-dim: #a2a8b8;
+    --text-faint: #6c7387;
+    --amber: #f2a93b;
+    --amber-dim: #c98d2e;
+    --blue: #6c93ff;
+    --green: #6fcf8f;
+    --red: #e2694f;
+    --radius-lg: 22px;
+    --radius-md: 14px;
+    --radius-sm: 8px;
+    --serif: 'Fraunces', serif;
+    --sans: 'Inter', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  a{color:inherit;}
+  button{font-family:inherit;cursor:pointer;}
+  ::selection{background:var(--amber);color:#161a23;}
+
+  /* ---------- utility ---------- */
+  .hidden{display:none !important;}
+  .container{max-width:1180px;margin:0 auto;padding:0 32px;}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:10px;
+    border-radius:999px;border:1px solid transparent;
+    padding:13px 26px;font-size:15px;font-weight:600;
+    transition:transform .15s ease, background .2s ease, border-color .2s ease;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn-primary{background:var(--amber);color:#1a1206;}
+  .btn-primary:hover{background:#f7b653;}
+  .btn-ghost{background:transparent;border-color:var(--line);color:var(--text);}
+  .btn-ghost:hover{border-color:var(--text-dim);}
+  .btn-danger{background:transparent;border-color:var(--red);color:var(--red);}
+  .btn-danger:hover{background:rgba(226,105,79,.1);}
+  .btn-sm{padding:9px 18px;font-size:13px;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  input,select,textarea{
+    width:100%;background:var(--bg-soft);border:1px solid var(--line);color:var(--text);
+    border-radius:var(--radius-sm);padding:12px 14px;font-family:inherit;font-size:14.5px;
+    transition:border-color .15s ease;
+  }
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--amber);}
+  label{font-size:13px;color:var(--text-dim);display:block;margin-bottom:6px;}
+  .field{margin-bottom:16px;}
+  .msg{font-size:13.5px;border-radius:var(--radius-sm);padding:10px 14px;margin-top:10px;}
+  .msg-error{background:rgba(226,105,79,.12);color:#f0a08e;}
+  .msg-ok{background:rgba(111,207,143,.12);color:#a4e6bb;}
+  code, .mono{font-family:'SFMono-Regular',Consolas,monospace;}
+  .divider{height:1px;background:var(--line);border:none;margin:28px 0;}
+
+  /* ================= LANDING ================= */
+  #view-landing{min-height:100vh;}
+  .nav-top{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:26px 0;
+  }
+  .logo{
+    font-family:var(--serif);font-size:24px;font-weight:600;letter-spacing:.2px;
+    display:flex;align-items:center;gap:9px;
+  }
+  .logo .dot{width:8px;height:8px;border-radius:50%;background:var(--amber);display:inline-block;}
+
+  .hero{
+    display:grid;grid-template-columns:1.1fr .9fr;gap:60px;
+    align-items:center;padding:60px 0 90px;
+  }
+  .hero h1{
+    font-family:var(--serif);font-weight:600;font-size:clamp(38px,5vw,58px);
+    line-height:1.08;letter-spacing:-.5px;margin:0 0 22px;max-width:15ch;
+  }
+  .hero p.lead{
+    font-size:18px;line-height:1.65;color:var(--text-dim);max-width:46ch;margin:0 0 34px;
+  }
+  .hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:20px;}
+  .hero-note{font-size:13px;color:var(--text-faint);}
+
+  .hero-art{
+    position:relative;background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius-lg);padding:30px;height:420px;
+    display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;
+  }
+  .hero-art::before{
+    content:"";position:absolute;inset:-40% -20% auto auto;width:280px;height:280px;
+    background:radial-gradient(circle at center, rgba(242,169,59,.18), transparent 70%);
+  }
+  .flow-row{display:flex;align-items:center;gap:12px;font-size:13.5px;color:var(--text-dim);position:relative;z-index:1;}
+  .flow-node{
+    background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;
+    padding:10px 14px;font-family:var(--sans);white-space:nowrap;
+  }
+  .flow-node.on{border-color:var(--amber);color:var(--amber);}
+  .flow-line{flex:1;height:1px;background:var(--line);position:relative;}
+  .flow-line::after{
+    content:"";position:absolute;top:-2px;width:6px;height:5px;border-radius:50%;
+    background:var(--amber);animation:travel 2.6s linear infinite;
+  }
+  @keyframes travel{0%{left:0;opacity:0;}10%{opacity:1;}90%{opacity:1;}100%{left:100%;opacity:0;}}
+  .art-stat{position:relative;z-index:1;}
+  .art-stat .n{font-family:var(--serif);font-size:40px;font-weight:600;color:var(--amber);}
+  .art-stat .l{font-size:13px;color:var(--text-dim);}
+
+  .features{padding:20px 0 90px;}
+  .feature-row{
+    display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;
+    padding:56px 0;border-top:1px solid var(--line);
+  }
+  .feature-row:nth-child(even) .feature-visual{order:2;}
+  .feature-eyebrow{color:var(--amber-dim);font-size:13.5px;margin-bottom:10px;}
+  .feature-row h3{font-family:var(--serif);font-size:30px;font-weight:600;margin:0 0 14px;}
+  .feature-row p{color:var(--text-dim);line-height:1.7;font-size:15.5px;max-width:42ch;}
+  .feature-visual{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);
+    padding:26px;min-height:220px;
+  }
+  .mini-card{background:var(--bg-soft);border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:10px;font-size:13.5px;display:flex;justify-content:space-between;}
+  .mini-card b{color:var(--text);}
+  .thumb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .thumb{aspect-ratio:1;border-radius:10px;background:linear-gradient(135deg,#2a3141,#171a23);border:1px solid var(--line);}
+  .bar-chart{display:flex;align-items:flex-end;gap:8px;height:150px;}
+  .bar-chart .bar{flex:1;background:linear-gradient(180deg,var(--amber),var(--amber-dim));border-radius:6px 6px 2px 2px;}
+
+  .auth-panel{
+    max-width:420px;margin:0 auto 100px;background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--radius-lg);padding:40px 36px;
+  }
+  .auth-panel h2{font-family:var(--serif);font-size:26px;margin:0 0 6px;font-weight:600;}
+  .auth-panel .sub{color:var(--text-dim);font-size:14px;margin-bottom:26px;}
+  .google-btn{
+    width:100%;background:#fff;color:#1a1a1a;border:none;border-radius:999px;
+    padding:13px;font-weight:600;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:10px;
+  }
+  .auth-sep{display:flex;align-items:center;gap:14px;color:var(--text-faint);font-size:12.5px;margin:22px 0;}
+  .auth-sep::before,.auth-sep::after{content:"";flex:1;height:1px;background:var(--line);}
+  .auth-toggle{text-align:center;margin-top:18px;font-size:13.5px;color:var(--text-dim);}
+  .auth-toggle button{background:none;border:none;color:var(--amber);font-weight:600;padding:0;font-size:13.5px;}
+
+  footer.landing-footer{border-top:1px solid var(--line);padding:30px 0;color:var(--text-faint);font-size:13px;display:flex;justify-content:space-between;}
+
+  /* ================= APP SHELL ================= */
+  #view-app{min-height:100vh;display:none;}
+  .topbar{
+    height:64px;border-bottom:1px solid var(--line);display:flex;align-items:center;
+    padding:0 22px;gap:16px;position:sticky;top:0;background:rgba(16,19,26,.9);backdrop-filter:blur(8px);z-index:30;
+  }
+  .hamburger{
+    width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .hamburger svg{width:18px;height:18px;stroke:var(--text);}
+  .topbar .logo{font-size:19px;}
+  .topbar-spacer{flex:1;}
+  .user-chip{
+    display:flex;align-items:center;gap:10px;padding:6px 12px 6px 6px;border-radius:999px;
+    background:var(--surface);border:1px solid var(--line);font-size:13.5px;
+  }
+  .user-chip img{width:28px;height:28px;border-radius:50%;object-fit:cover;background:var(--bg-soft);}
+
+  .app-body{display:flex;}
+  .sidebar{
+    width:238px;flex-shrink:0;border-right:1px solid var(--line);
+    min-height:calc(100vh - 64px);padding:20px 14px;
+    transition:margin-left .25s ease;position:sticky;top:64px;align-self:flex-start;height:calc(100vh - 64px);
+  }
+  .sidebar.collapsed{margin-left:-238px;}
+  .nav-item{
+    display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;
+    color:var(--text-dim);font-size:14.5px;font-weight:500;margin-bottom:4px;background:none;border:none;width:100%;text-align:left;
+  }
+  .nav-item svg{width:18px;height:18px;stroke:currentColor;flex-shrink:0;}
+  .nav-item:hover{background:var(--surface);color:var(--text);}
+  .nav-item.active{background:var(--surface-2);color:var(--amber);}
+  .sidebar-foot{margin-top:20px;padding-top:16px;border-top:1px solid var(--line);}
+
+  .main{flex:1;padding:34px 40px;max-width:980px;}
+  .panel{display:none;}
+  .panel.active{display:block;animation:fadein .3s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .panel-head{margin-bottom:28px;}
+  .panel-head h1{font-family:var(--serif);font-size:30px;font-weight:600;margin:0 0 6px;}
+  .panel-head p{color:var(--text-dim);font-size:14.5px;margin:0;}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-md);padding:22px;}
+  .card h3{margin:0 0 4px;font-size:15px;font-weight:600;}
+  .stat-num{font-family:var(--serif);font-size:34px;font-weight:600;margin:6px 0 2px;}
+  .stat-label{font-size:12.5px;color:var(--text-faint);}
+  .stat-up{color:var(--green);font-size:12.5px;}
+
+  .section-title{font-size:13px;text-transform:none;color:var(--text-faint);margin:30px 0 14px;letter-spacing:.2px;}
+
+  .key-box{
+    display:flex;align-items:center;gap:10px;background:var(--bg-soft);border:1px solid var(--line);
+    border-radius:var(--radius-sm);padding:14px 16px;font-family:'SFMono-Regular',Consolas,monospace;font-size:14px;
+    justify-content:space-between;flex-wrap:wrap;
+  }
+  pre.snippet{
+    background:#0c0e13;border:1px solid var(--line);border-radius:var(--radius-sm);
+    padding:18px;font-size:12.8px;line-height:1.65;overflow-x:auto;color:#c8d1e0;
+  }
+  .copy-btn{font-size:12px;padding:6px 12px;}
+
+  .dropzone{
+    border:1.5px dashed var(--line);border-radius:var(--radius-md);padding:40px 20px;text-align:center;
+    color:var(--text-dim);font-size:14px;cursor:pointer;transition:border-color .2s ease;
+  }
+  .dropzone.drag{border-color:var(--amber);color:var(--amber);}
+  .media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;margin-top:20px;}
+  .media-item{border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;background:var(--bg-soft);}
+  .media-item img,.media-item video{width:100%;height:110px;object-fit:cover;display:block;}
+  .media-item .meta{padding:8px 10px;font-size:11.5px;color:var(--text-faint);display:flex;justify-content:space-between;}
+
+  .list-row{
+    display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid var(--line);font-size:14px;
+  }
+  .list-row:last-child{border-bottom:none;}
+  .pill{background:var(--surface-2);color:var(--text-dim);border-radius:999px;padding:3px 11px;font-size:12px;}
+
+  .profile-head{display:flex;align-items:center;gap:16px;margin-bottom:26px;}
+  .profile-head img{width:64px;height:64px;border-radius:50%;background:var(--bg-soft);}
+  .profile-head h2{font-family:var(--serif);font-size:22px;margin:0 0 4px;}
+  .profile-head p{margin:0;color:var(--text-dim);font-size:13.5px;}
+
+  @media (max-width: 880px){
+    .hero{grid-template-columns:1fr;}
+    .hero-art{height:320px;}
+    .feature-row{grid-template-columns:1fr;}
+    .feature-row:nth-child(even) .feature-visual{order:0;}
+    .grid-2,.grid-3{grid-template-columns:1fr;}
+    .sidebar{position:fixed;left:0;top:64px;background:var(--bg);z-index:40;box-shadow:0 20px 40px rgba(0,0,0,.4);}
+    .sidebar.collapsed{margin-left:-260px;}
+    .main{padding:26px 18px;}
+    .container{padding:0 20px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= LANDING / LOGIN ================= -->
+<div id="view-landing">
+  <div class="container">
+    <div class="nav-top">
+      <div class="logo"><span class="dot"></span>Dravi</div>
+      <a href="#auth" class="btn btn-ghost btn-sm">Entrar</a>
+    </div>
+
+    <section class="hero">
+      <div>
+        <h1>Una sola clave para enviar correos y guardar contenido</h1>
+        <p class="lead">Dravi te da una clave de API que conectas a cualquier web o app. Los formularios de contacto envían el correo, las fotos y vídeos se guardan en la nube, y tú ves todo lo que pasa desde un mismo panel.</p>
+        <div class="hero-actions">
+          <a href="#auth" class="btn btn-primary">Crear mi cuenta</a>
+          <a href="#features" class="btn btn-ghost">Ver cómo funciona</a>
+        </div>
+        <p class="hero-note">Sin tarjetas ni instalaciones. Inicia sesión con Google o tu correo.</p>
+      </div>
+      <div class="hero-art">
+        <div class="flow-row">
+          <div class="flow-node on">Tu formulario</div>
+          <div class="flow-line"></div>
+          <div class="flow-node">Clave de Dravi</div>
+          <div class="flow-line"></div>
+          <div class="flow-node">Correo enviado</div>
+        </div>
+        <div class="art-stat">
+          <div class="n">1 clave</div>
+          <div class="l">conecta correo, imágenes y estadísticas en cualquier proyecto</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="features" id="features">
+      <div class="feature-row">
+        <div>
+          <div class="feature-eyebrow">Correo</div>
+          <h3>Personaliza el mensaje que llega a tu buzón</h3>
+          <p>Elige qué campos pide tu formulario, el asunto y el texto del correo. Dravi arma el envío y te entrega un fragmento de código listo para pegar en tu web o app.</p>
+        </div>
+        <div class="feature-visual">
+          <div class="mini-card"><span>Nombre</span><b>Campo activo</b></div>
+          <div class="mini-card"><span>Correo</span><b>Campo activo</b></div>
+          <div class="mini-card"><span>Mensaje</span><b>Campo activo</b></div>
+          <div class="mini-card"><span>Asunto del correo</span><b>Editable</b></div>
+        </div>
+      </div>
+
+      <div class="feature-row">
+        <div>
+          <div class="feature-eyebrow">Contenido</div>
+          <h3>Sube fotos y vídeos sin montar un servidor</h3>
+          <p>Cada archivo que reciben tus proyectos se guarda en tu galería de Dravi mediante Cloudinary, listo para mostrar donde quieras.</p>
+        </div>
+        <div class="feature-visual">
+          <div class="thumb-grid">
+            <div class="thumb"></div><div class="thumb"></div><div class="thumb"></div>
+            <div class="thumb"></div><div class="thumb"></div><div class="thumb"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-row">
+        <div>
+          <div class="feature-eyebrow">Estadísticas</div>
+          <h3>Mira lo que pasó los últimos días, sin ruido</h3>
+          <p>Correos enviados y archivos recibidos, día por día. Solo los números que importan, presentados con claridad.</p>
+        </div>
+        <div class="feature-visual">
+          <div class="bar-chart">
+            <div class="bar" style="height:40%"></div>
+            <div class="bar" style="height:65%"></div>
+            <div class="bar" style="height:35%"></div>
+            <div class="bar" style="height:80%"></div>
+            <div class="bar" style="height:55%"></div>
+            <div class="bar" style="height:90%"></div>
+            <div class="bar" style="height:60%"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="auth">
+      <div class="auth-panel">
+        <h2 id="auth-title">Entra en tu cuenta</h2>
+        <p class="sub" id="auth-sub">Gestiona tu clave, tu correo y tu contenido desde un mismo lugar.</p>
+
+        <button class="google-btn" id="btn-google">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.95v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.67 9c0-.59.1-1.16.28-1.7V4.97H.95A9 9 0 0 0 0 9c0 1.45.35 2.83.95 4.03l3-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.46 3.44 1.35l2.58-2.58C13.46.9 11.43 0 9 0A9 9 0 0 0 .95 4.97l3 2.33C4.66 5.17 6.65 3.58 9 3.58z"/></svg>
+          Continuar con Google
+        </button>
+
+        <div class="auth-sep">o con tu correo</div>
+
+        <div class="field">
+          <label for="in-email">Correo</label>
+          <input type="email" id="in-email" placeholder="tucorreo@ejemplo.com">
+        </div>
+        <div class="field">
+          <label for="in-pass">Contraseña</label>
+          <input type="password" id="in-pass" placeholder="••••••••">
+        </div>
+        <div class="field hidden" id="field-name">
+          <label for="in-name">Tu nombre</label>
+          <input type="text" id="in-name" placeholder="¿Cómo te llamas?">
+        </div>
+
+        <button class="btn btn-primary" style="width:100%" id="btn-email-action">Entrar</button>
+        <div id="auth-msg"></div>
+
+        <div class="auth-toggle">
+          <span id="auth-toggle-text">¿No tienes cuenta?</span>
+          <button id="btn-auth-toggle">Regístrate</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="landing-footer">
+      <span>Dravi</span>
+      <span>Correo y contenido para tus proyectos</span>
+    </footer>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="view-app">
+  <div class="topbar">
+    <button class="hamburger" id="btn-hamburger" aria-label="Menú">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="logo"><span class="dot"></span>Dravi</div>
+    <div class="topbar-spacer"></div>
+    <div class="user-chip">
+      <img id="topbar-avatar" src="" alt="">
+      <span id="topbar-name">—</span>
+    </div>
+  </div>
+
+  <div class="app-body">
+    <nav class="sidebar" id="sidebar">
+      <button class="nav-item active" data-panel="inicio">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v9h14v-9"/></svg>
+        Inicio
+      </button>
+      <button class="nav-item" data-panel="api">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v6H4z"/><path d="M4 14h10v6H4z"/><circle cx="18" cy="17" r="3"/></svg>
+        Correo API
+      </button>
+      <button class="nav-item" data-panel="media">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        Multimedia
+      </button>
+      <button class="nav-item" data-panel="stats">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Estadísticas
+      </button>
+      <button class="nav-item" data-panel="cuenta">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+        Mi cuenta
+      </button>
+
+      <div class="sidebar-foot">
+        <button class="nav-item" id="btn-logout">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Salir
+        </button>
+      </div>
+    </nav>
+
+    <main class="main">
+
+      <!-- INICIO -->
+      <section class="panel active" id="panel-inicio">
+        <div class="panel-head">
+          <h1 id="inicio-saludo">Hola de nuevo</h1>
+          <p>Este es el estado de tu cuenta hoy.</p>
+        </div>
+        <div class="grid-3">
+          <div class="card">
+            <h3>Correos enviados hoy</h3>
+            <div class="stat-num" id="home-emails-today">0</div>
+            <div class="stat-label">a través de tu clave</div>
+          </div>
+          <div class="card">
+            <h3>Archivos guardados hoy</h3>
+            <div class="stat-num" id="home-media-today">0</div>
+            <div class="stat-label">fotos y vídeos</div>
+          </div>
+          <div class="card">
+            <h3>Estado de tu clave</h3>
+            <div class="stat-num" id="home-key-status" style="font-size:20px;">Sin generar</div>
+            <div class="stat-label">ve a Correo API para crearla</div>
+          </div>
+        </div>
+
+        <div class="section-title">Actividad reciente</div>
+        <div class="card" id="home-recent-list">
+          <p style="color:var(--text-faint);font-size:14px;margin:0;">Todavía no hay actividad.</p>
+        </div>
+      </section>
+
+      <!-- CORREO API -->
+      <section class="panel" id="panel-api">
+        <div class="panel-head">
+          <h1>Correo API</h1>
+          <p>Genera tu clave, define el mensaje y pégalo en tu web o app.</p>
+        </div>
+
+        <div class="section-title">Tu clave</div>
+        <div class="card">
+          <div class="key-box">
+            <span id="api-key-display">Todavía no has generado una clave</span>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-ghost btn-sm copy-btn" id="btn-copy-key">Copiar</button>
+              <button class="btn btn-primary btn-sm" id="btn-generate-key">Generar clave</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">Campos del formulario</div>
+        <div class="card">
+          <div class="grid-2">
+            <div class="field">
+              <label>Etiqueta del campo nombre</label>
+              <input type="text" id="cfg-label-nombre" value="Nombre">
+            </div>
+            <div class="field">
+              <label>Etiqueta del campo correo</label>
+              <input type="text" id="cfg-label-correo" value="Correo">
+            </div>
+          </div>
+          <div class="field">
+            <label>Etiqueta del campo mensaje</label>
+            <input type="text" id="cfg-label-mensaje" value="Mensaje">
+          </div>
+          <div class="field">
+            <label>Asunto del correo que recibirás</label>
+            <input type="text" id="cfg-asunto" value="Nuevo mensaje desde tu web">
+          </div>
+          <div class="field">
+            <label>Correo donde quieres recibir los mensajes</label>
+            <input type="email" id="cfg-destino" placeholder="tucorreo@ejemplo.com">
+          </div>
+          <button class="btn btn-primary btn-sm" id="btn-save-config">Guardar configuración</button>
+          <div id="config-msg"></div>
+        </div>
+
+        <div class="section-title">Motor de envío (EmailJS)</div>
+        <div class="card">
+          <p style="color:var(--text-dim);font-size:13.5px;margin-top:0;">Dravi usa <span class="mono">EmailJS</span> para enviar el correo sin necesidad de un servidor propio. Crea una cuenta gratis en emailjs.com y pega aquí tus tres datos.</p>
+          <div class="grid-2">
+            <div class="field">
+              <label>Service ID</label>
+              <input type="text" id="cfg-service" placeholder="service_xxxxxxx">
+            </div>
+            <div class="field">
+              <label>Template ID</label>
+              <input type="text" id="cfg-template" placeholder="template_xxxxxxx">
+            </div>
+          </div>
+          <div class="field">
+            <label>Public Key</label>
+            <input type="text" id="cfg-public" placeholder="tu_public_key">
+          </div>
+          <button class="btn btn-ghost btn-sm" id="btn-save-emailjs">Guardar datos de EmailJS</button>
+          <div id="emailjs-msg"></div>
+        </div>
+
+        <div class="section-title">Código para tu web o app</div>
+        <div class="card">
+          <p style="color:var(--text-dim);font-size:13.5px;margin-top:0;">Pega este bloque antes de cerrar <span class="mono">&lt;/body&gt;</span> y llama a <span class="mono">enviarCorreoDravi()</span> cuando tu formulario se envíe.</p>
+          <pre class="snippet" id="snippet-code"></pre>
+          <button class="btn btn-ghost btn-sm" id="btn-copy-snippet">Copiar código</button>
+        </div>
+      </section>
+
+      <!-- MULTIMEDIA -->
+      <section class="panel" id="panel-media">
+        <div class="panel-head">
+          <h1>Multimedia</h1>
+          <p>Sube fotos y vídeos a tu galería en la nube.</p>
+        </div>
+
+        <div class="dropzone" id="dropzone">
+          <p style="margin:0 0 6px;">Arrastra una foto o vídeo aquí, o toca para elegir un archivo</p>
+          <p style="margin:0;font-size:12.5px;color:var(--text-faint);">Se guarda en tu cuenta de Cloudinary</p>
+          <input type="file" id="file-input" accept="image/*,video/*" class="hidden">
+        </div>
+        <div id="upload-progress"></div>
+
+        <div class="section-title">Código para subir desde tu web o app</div>
+        <div class="card">
+          <pre class="snippet" id="snippet-cloudinary"></pre>
+          <button class="btn btn-ghost btn-sm" id="btn-copy-cloud-snippet">Copiar código</button>
+        </div>
+
+        <div class="section-title">Tu galería</div>
+        <div class="media-grid" id="media-grid"></div>
+      </section>
+
+      <!-- ESTADISTICAS -->
+      <section class="panel" id="panel-stats">
+        <div class="panel-head">
+          <h1>Estadísticas</h1>
+          <p>Lo que ha pasado en los últimos días.</p>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h3>Correos — últimos 7 días</h3>
+            <div class="stat-num" id="stats-emails-total">0</div>
+            <div class="stat-label">total enviados</div>
+          </div>
+          <div class="card">
+            <h3>Archivos — últimos 7 días</h3>
+            <div class="stat-num" id="stats-media-total">0</div>
+            <div class="stat-label">fotos y vídeos guardados</div>
+          </div>
+        </div>
+
+        <div class="section-title">Detalle por día</div>
+        <div class="card" id="stats-list"></div>
+      </section>
+
+      <!-- CUENTA -->
+      <section class="panel" id="panel-cuenta">
+        <div class="panel-head">
+          <h1>Mi cuenta</h1>
+          <p>Tu información de acceso.</p>
+        </div>
+        <div class="card">
+          <div class="profile-head">
+            <img id="profile-avatar" src="" alt="">
+            <div>
+              <h2 id="profile-name">—</h2>
+              <p id="profile-email">—</p>
+            </div>
+          </div>
+          <hr class="divider">
+          <div class="list-row"><span>Método de acceso</span><span class="pill" id="profile-provider">—</span></div>
+          <div class="list-row"><span>Cuenta creada</span><span id="profile-created">—</span></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ================= SDKs ================= -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+<script>
+/* ============================================================
+   CONFIGURACIÓN
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyBHT26G14krUYTcW23Ipqoo7HMkXRNXCVQ",
+  authDomain: "dravi-robert.firebaseapp.com",
+  databaseURL: "https://dravi-robert-default-rtdb.firebaseio.com",
+  projectId: "dravi-robert",
+  storageBucket: "dravi-robert.firebasestorage.app",
+  messagingSenderId: "770791088365",
+  appId: "1:770791088365:web:49d0b42ffb2c6a7ef8ece4",
+  measurementId: "G-0ECRJZVXKB"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+const CLOUDINARY_ACCOUNTS = [
+  { cloud_name: "ecgbufts", upload_preset: "Robert" }
+];
+const CLOUD = CLOUDINARY_ACCOUNTS[0];
+const DB_URL = firebaseConfig.databaseURL;
+
+let currentUser = null;
+let currentUid = null;
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function $(id){ return document.getElementById(id); }
+function todayKey(d){
+  const dt = d || new Date();
+  return dt.toISOString().slice(0,10);
+}
+function last7Days(){
+  const out = [];
+  for(let i=6;i>=0;i--){
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    out.push(todayKey(d));
+  }
+  return out;
+}
+function randomKey(){
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+  let out = "dravi_";
+  for(let i=0;i<28;i++) out += chars[Math.floor(Math.random()*chars.length)];
+  return out;
+}
+function showMsg(el, text, ok){
+  el.innerHTML = `<div class="msg ${ok ? 'msg-ok':'msg-error'}">${text}</div>`;
+  setTimeout(()=>{ el.innerHTML = ""; }, 4000);
+}
+function friendlyAuthError(code){
+  const map = {
+    'auth/invalid-email':'Ese correo no parece válido.',
+    'auth/user-not-found':'No encontramos una cuenta con ese correo.',
+    'auth/wrong-password':'La contraseña no coincide.',
+    'auth/email-already-in-use':'Ya existe una cuenta con ese correo.',
+    'auth/weak-password':'Usa una contraseña de al menos 6 caracteres.',
+    'auth/invalid-credential':'Correo o contraseña incorrectos.',
+    'auth/popup-closed-by-user':'Cerraste la ventana antes de terminar.'
+  };
+  return map[code] || 'Algo salió mal. Inténtalo otra vez.';
+}
+
+/* ============================================================
+   LANDING: LOGIN / REGISTRO
+   ============================================================ */
+let authMode = 'login';
+
+$('btn-auth-toggle').addEventListener('click', () => {
+  authMode = authMode === 'login' ? 'register' : 'login';
+  if(authMode === 'register'){
+    $('auth-title').textContent = 'Crea tu cuenta';
+    $('auth-sub').textContent = 'Un correo y una contraseña bastan para empezar.';
+    $('field-name').classList.remove('hidden');
+    $('btn-email-action').textContent = 'Crear cuenta';
+    $('auth-toggle-text').textContent = '¿Ya tienes cuenta?';
+    $('btn-auth-toggle').textContent = 'Entra';
+  } else {
+    $('auth-title').textContent = 'Entra en tu cuenta';
+    $('auth-sub').textContent = 'Gestiona tu clave, tu correo y tu contenido desde un mismo lugar.';
+    $('field-name').classList.add('hidden');
+    $('btn-email-action').textContent = 'Entrar';
+    $('auth-toggle-text').textContent = '¿No tienes cuenta?';
+    $('btn-auth-toggle').textContent = 'Regístrate';
+  }
+});
+
+$('btn-google').addEventListener('click', async () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try{
+    await auth.signInWithPopup(provider);
+  }catch(e){
+    showMsg($('auth-msg'), friendlyAuthError(e.code), false);
+  }
+});
+
+$('btn-email-action').addEventListener('click', async () => {
+  const email = $('in-email').value.trim();
+  const pass = $('in-pass').value;
+  if(!email || !pass){
+    showMsg($('auth-msg'), 'Escribe tu correo y contraseña.', false);
+    return;
+  }
+  try{
+    if(authMode === 'register'){
+      const name = $('in-name').value.trim();
+      const cred = await auth.createUserWithEmailAndPassword(email, pass);
+      if(name) await cred.user.updateProfile({ displayName: name });
+    } else {
+      await auth.signInWithEmailAndPassword(email, pass);
+    }
+  }catch(e){
+    showMsg($('auth-msg'), friendlyAuthError(e.code), false);
+  }
+});
+
+$('btn-logout').addEventListener('click', async () => {
+  await auth.signOut();
+});
+
+/* ============================================================
+   ESTADO DE SESIÓN
+   ============================================================ */
+auth.onAuthStateChanged(async (user) => {
+  if(user){
+    currentUser = user;
+    currentUid = user.uid;
+    await ensureUserRecord(user);
+    showApp(user);
+    loadAll();
+  } else {
+    currentUser = null;
+    currentUid = null;
+    $('view-app').style.display = 'none';
+    $('view-landing').style.display = 'block';
+  }
+});
+
+async function ensureUserRecord(user){
+  const ref = db.ref('users/' + user.uid + '/perfil');
+  const snap = await ref.get();
+  if(!snap.exists()){
+    await ref.set({
+      nombre: user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario'),
+      correo: user.email || '',
+      metodo: user.providerData[0] ? user.providerData[0].providerId : 'password',
+      creado: new Date().toISOString()
+    });
+  }
+}
+
+function showApp(user){
+  $('view-landing').style.display = 'none';
+  $('view-app').style.display = 'block';
+
+  const name = user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario');
+  const photo = user.photoURL || 'https://api.dicebear.com/7.x/initials/svg?seed=' + encodeURIComponent(name) + '&backgroundColor=212734&textColor=e9e7e0';
+  $('topbar-avatar').src = photo;
+  $('topbar-name').textContent = name;
+  $('inicio-saludo').textContent = 'Hola, ' + name.split(' ')[0];
+  $('profile-avatar').src = photo;
+  $('profile-name').textContent = name;
+  $('profile-email').textContent = user.email || 'Cuenta de Google';
+}
+
+/* ============================================================
+   MENÚ LATERAL Y NAVEGACIÓN
+   ============================================================ */
+$('btn-hamburger').addEventListener('click', () => {
+  $('sidebar').classList.toggle('collapsed');
+});
+
+document.querySelectorAll('.nav-item[data-panel]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item[data-panel]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    $('panel-' + btn.dataset.panel).classList.add('active');
+    if(window.innerWidth <= 880) $('sidebar').classList.add('collapsed');
+  });
+});
+
+/* ============================================================
+   CARGA GENERAL
+   ============================================================ */
+function loadAll(){
+  loadProfilePanel();
+  loadApiPanel();
+  loadMedia();
+  loadStats();
+}
+
+async function loadProfilePanel(){
+  const snap = await db.ref('users/' + currentUid + '/perfil').get();
+  if(snap.exists()){
+    const p = snap.val();
+    const providerLabel = p.metodo === 'google.com' ? 'Google' : 'Correo y contraseña';
+    $('profile-provider').textContent = providerLabel;
+    if(p.creado){
+      const d = new Date(p.creado);
+      $('profile-created').textContent = d.toLocaleDateString('es-ES', {day:'numeric', month:'long', year:'numeric'});
+    }
+  }
+}
+
+/* ============================================================
+   PANEL: CORREO API
+   ============================================================ */
+async function loadApiPanel(){
+  const keySnap = await db.ref('users/' + currentUid + '/apiKey').get();
+  const key = keySnap.exists() ? keySnap.val() : null;
+  if(key){
+    $('api-key-display').textContent = key;
+    $('home-key-status').textContent = 'Activa';
+  } else {
+    $('api-key-display').textContent = 'Todavía no has generado una clave';
+    $('home-key-status').textContent = 'Sin generar';
+  }
+
+  const cfgSnap = await db.ref('users/' + currentUid + '/emailConfig').get();
+  const cfg = cfgSnap.exists() ? cfgSnap.val() : {};
+  $('cfg-label-nombre').value = cfg.labelNombre || 'Nombre';
+  $('cfg-label-correo').value = cfg.labelCorreo || 'Correo';
+  $('cfg-label-mensaje').value = cfg.labelMensaje || 'Mensaje';
+  $('cfg-asunto').value = cfg.asunto || 'Nuevo mensaje desde tu web';
+  $('cfg-destino').value = cfg.destino || currentUser.email || '';
+  $('cfg-service').value = cfg.emailjsService || '';
+  $('cfg-template').value = cfg.emailjsTemplate || '';
+  $('cfg-public').value = cfg.emailjsPublic || '';
+
+  renderSnippet(key);
+  renderCloudinarySnippet();
+}
+
+$('btn-generate-key').addEventListener('click', async () => {
+  const oldKeySnap = await db.ref('users/' + currentUid + '/apiKey').get();
+  const oldKey = oldKeySnap.exists() ? oldKeySnap.val() : null;
+  const newKey = randomKey();
+
+  const updates = {};
+  if(oldKey) updates['apikeys/' + oldKey] = null;
+  updates['apikeys/' + newKey] = currentUid;
+  updates['users/' + currentUid + '/apiKey'] = newKey;
+  await db.ref().update(updates);
+
+  $('api-key-display').textContent = newKey;
+  $('home-key-status').textContent = 'Activa';
+  renderSnippet(newKey);
+});
+
+$('btn-copy-key').addEventListener('click', () => {
+  const text = $('api-key-display').textContent;
+  if(text.startsWith('dravi_')) navigator.clipboard.writeText(text);
+});
+
+$('btn-save-config').addEventListener('click', async () => {
+  const data = {
+    labelNombre: $('cfg-label-nombre').value.trim() || 'Nombre',
+    labelCorreo: $('cfg-label-correo').value.trim() || 'Correo',
+    labelMensaje: $('cfg-label-mensaje').value.trim() || 'Mensaje',
+    asunto: $('cfg-asunto').value.trim() || 'Nuevo mensaje',
+    destino: $('cfg-destino').value.trim()
+  };
+  await db.ref('users/' + currentUid + '/emailConfig').update(data);
+  showMsg($('config-msg'), 'Configuración guardada.', true);
+  const keySnap = await db.ref('users/' + currentUid + '/apiKey').get();
+  renderSnippet(keySnap.exists() ? keySnap.val() : null);
+});
+
+$('btn-save-emailjs').addEventListener('click', async () => {
+  const data = {
+    emailjsService: $('cfg-service').value.trim(),
+    emailjsTemplate: $('cfg-template').value.trim(),
+    emailjsPublic: $('cfg-public').value.trim()
+  };
+  if(!data.emailjsService || !data.emailjsTemplate || !data.emailjsPublic){
+    showMsg($('emailjs-msg'), 'Completa los tres campos de EmailJS.', false);
+    return;
+  }
+  await db.ref('users/' + currentUid + '/emailConfig').update(data);
+  showMsg($('emailjs-msg'), 'Datos de EmailJS guardados.', true);
+});
+
+function renderSnippet(key){
+  const k = key || 'TU_CLAVE_AQUI';
+  const code = `<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"><\/script>
+<script>
+async function enviarCorreoDravi(datos) {
+  // datos = { nombre, correo, mensaje }
+  const apiKey = "${k}";
+  const base = "${DB_URL}";
+
+  const uidRes = await fetch(base + "/apikeys/" + apiKey + ".json");
+  const uid = await uidRes.json();
+  if (!uid) { console.error("Clave de Dravi no válida"); return; }
+
+  const cfgRes = await fetch(base + "/users/" + uid + "/emailConfig.json");
+  const cfg = await cfgRes.json();
+  if (!cfg || !cfg.emailjsPublic) { console.error("Falta configurar EmailJS en Dravi"); return; }
+
+  emailjs.init(cfg.emailjsPublic);
+  await emailjs.send(cfg.emailjsService, cfg.emailjsTemplate, {
+    nombre: datos.nombre,
+    correo: datos.correo,
+    mensaje: datos.mensaje,
+    asunto: cfg.asunto,
+    destino: cfg.destino
+  });
+
+  const hoy = new Date().toISOString().slice(0,10);
+  await fetch(base + "/users/" + uid + "/stats/" + hoy + "/enviados.json", {
+    method: "PUT",
+    body: JSON.stringify((await (await fetch(base + "/users/" + uid + "/stats/" + hoy + "/enviados.json")).json() || 0) + 1)
+  });
+}
+<\/script>`;
+  $('snippet-code').textContent = code;
+}
+
+$('btn-copy-snippet').addEventListener('click', () => {
+  navigator.clipboard.writeText($('snippet-code').textContent);
+});
+
+/* ============================================================
+   PANEL: MULTIMEDIA (CLOUDINARY)
+   ============================================================ */
+function renderCloudinarySnippet(){
+  const code = `<script>
+async function subirArchivoDravi(file, apiKey) {
+  const base = "${DB_URL}";
+  const uidRes = await fetch(base + "/apikeys/" + apiKey + ".json");
+  const uid = await uidRes.json();
+  if (!uid) { console.error("Clave de Dravi no válida"); return; }
+
+  const form = new FormData();
+  form.append("file", file);
+  form.append("upload_preset", "${CLOUD.upload_preset}");
+
+  const res = await fetch("https://api.cloudinary.com/v1_1/${CLOUD.cloud_name}/auto/upload", {
+    method: "POST", body: form
+  });
+  const data = await res.json();
+
+  await fetch(base + "/users/" + uid + "/media.json", {
+    method: "POST",
+    body: JSON.stringify({ url: data.secure_url, tipo: data.resource_type, fecha: new Date().toISOString() })
+  });
+
+  return data.secure_url;
+}
+<\/script>`;
+  $('snippet-cloudinary').textContent = code;
+}
+
+$('btn-copy-cloud-snippet').addEventListener('click', () => {
+  navigator.clipboard.writeText($('snippet-cloudinary').textContent);
+});
+
+const dropzone = $('dropzone');
+const fileInput = $('file-input');
+dropzone.addEventListener('click', () => fileInput.click());
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.classList.remove('drag');
+  if(e.dataTransfer.files[0]) uploadFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => {
+  if(fileInput.files[0]) uploadFile(fileInput.files[0]);
+});
+
+async function uploadFile(file){
+  $('upload-progress').innerHTML = `<div class="msg msg-ok">Subiendo ${file.name}...</div>`;
+  try{
+    const form = new FormData();
+    form.append('file', file);
+    form.append('upload_preset', CLOUD.upload_preset);
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD.cloud_name}/auto/upload`, { method:'POST', body: form });
+    const data = await res.json();
+    if(!data.secure_url) throw new Error('No se pudo subir el archivo');
+
+    await db.ref('users/' + currentUid + '/media').push({
+      url: data.secure_url,
+      tipo: data.resource_type,
+      fecha: new Date().toISOString()
+    });
+
+    const hoy = todayKey();
+    await db.ref('users/' + currentUid + '/stats/' + hoy + '/media').transaction(v => (v || 0) + 1);
+
+    $('upload-progress').innerHTML = `<div class="msg msg-ok">${file.name} guardado.</div>`;
+    setTimeout(()=>{ $('upload-progress').innerHTML=''; }, 3000);
+    loadMedia();
+    loadStats();
+  }catch(err){
+    $('upload-progress').innerHTML = `<div class="msg msg-error">No se pudo subir el archivo.</div>`;
+  }
+  fileInput.value = '';
+}
+
+async function loadMedia(){
+  const snap = await db.ref('users/' + currentUid + '/media').limitToLast(24).get();
+  const grid = $('media-grid');
+  grid.innerHTML = '';
+  if(!snap.exists()){
+    grid.innerHTML = '<p style="color:var(--text-faint);font-size:14px;">Todavía no has subido nada.</p>';
+    return;
+  }
+  const items = [];
+  snap.forEach(child => items.push(child.val()));
+  items.reverse().forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'media-item';
+    const d = new Date(item.fecha);
+    const fecha = d.toLocaleDateString('es-ES', {day:'numeric', month:'short'});
+    if(item.tipo === 'video'){
+      div.innerHTML = `<video src="${item.url}" muted></video><div class="meta"><span>Vídeo</span><span>${fecha}</span></div>`;
+    } else {
+      div.innerHTML = `<img src="${item.url}" loading="lazy"><div class="meta"><span>Foto</span><span>${fecha}</span></div>`;
+    }
+    grid.appendChild(div);
+  });
+}
+
+/* ============================================================
+   PANEL: ESTADÍSTICAS + INICIO
+   ============================================================ */
+async function loadStats(){
+  const days = last7Days();
+  const snap = await db.ref('users/' + currentUid + '/stats').get();
+  const stats = snap.exists() ? snap.val() : {};
+
+  let totalEmails = 0, totalMedia = 0;
+  const listHtml = [];
+  days.forEach(day => {
+    const d = stats[day] || {};
+    const enviados = d.enviados || 0;
+    const media = d.media || 0;
+    totalEmails += enviados;
+    totalMedia += media;
+    const label = new Date(day).toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'short'});
+    listHtml.push(`<div class="list-row"><span style="text-transform:capitalize;">${label}</span><span>${enviados} correos · ${media} archivos</span></div>`);
+  });
+
+  $('stats-emails-total').textContent = totalEmails;
+  $('stats-media-total').textContent = totalMedia;
+  $('stats-list').innerHTML = listHtml.reverse().join('');
+
+  const today = todayKey();
+  const todayData = stats[today] || {};
+  $('home-emails-today').textContent = todayData.enviados || 0;
+  $('home-media-today').textContent = todayData.media || 0;
+
+  const recentDays = days.slice(-3).reverse();
+  const recentHtml = recentDays.map(day => {
+    const d = stats[day] || {};
+    if(!d.enviados && !d.media) return null;
+    const label = new Date(day).toLocaleDateString('es-ES', {day:'numeric', month:'long'});
+    return `<div class="list-row"><span>${label}</span><span>${d.enviados||0} correos · ${d.media||0} archivos</span></div>`;
+  }).filter(Boolean);
+  $('home-recent-list').innerHTML = recentHtml.length
+    ? recentHtml.join('')
+    : '<p style="color:var(--text-faint);font-size:14px;margin:0;">Todavía no hay actividad.</p>';
+}
+</script>
+</body>
+</html>
