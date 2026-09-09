@@ -6,6 +6,7 @@
 <title>Dravi Sensi — Sensibilidades de Free Fire para tu celular</title>
 <meta name="description" content="Encuentra la sensibilidad de Free Fire ideal para tu celular. Busca tu modelo entre cientos de dispositivos iPhone, Samsung, Xiaomi, Poco, Huawei y más, y consigue ajustes pensados para mover cámara con fluidez y subir la mira con precisión.">
 <meta name="theme-color" content="#0B0D10">
+<meta name="google-site-verification" content="L7J4snwpuSdvXFQ3aX8XT1d-HqebBgs9teXXsNwD-YU" />
 <link rel="icon" href="https://i.imgur.com/dgFen0f.png" type="image/png">
 <link rel="apple-touch-icon" href="https://i.imgur.com/dgFen0f.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -433,6 +434,69 @@
 
   ::selection{ background:var(--amber); color:#14171C; }
   :focus-visible{ outline:2px solid var(--amber); outline-offset:2px; }
+
+  /* ---------- inicio (bienvenida) ---------- */
+  .inicio-wrap{
+    max-width:640px; margin:44px auto; padding:0 20px; text-align:center;
+  }
+  .inicio-wrap .mark-big{
+    width:84px; height:84px; border-radius:18px; margin:0 auto 22px;
+    background:linear-gradient(135deg,var(--amber),var(--ember));
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+    border:1px solid var(--line); box-shadow:var(--shadow);
+  }
+  .inicio-wrap .mark-big img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .inicio-wrap h1{ font-size:30px; margin-bottom:14px; }
+  .inicio-wrap p{ color:var(--text-dim); font-size:15px; line-height:1.75; }
+  .inicio-wrap .inicio-actions{
+    display:flex; gap:10px; justify-content:center; margin-top:28px; flex-wrap:wrap;
+  }
+  .inicio-wrap .inicio-actions .btn{ flex:none; padding:12px 22px; }
+
+  /* ---------- controles ---------- */
+  .controles-head-actions{
+    max-width:640px; margin:0 auto 18px; display:flex; justify-content:flex-end;
+  }
+  .controles-list{
+    max-width:640px; margin:0 auto; display:flex; flex-direction:column; gap:14px;
+  }
+  .control-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    overflow:hidden; box-shadow:var(--shadow); transition:border-color .15s ease;
+  }
+  .control-card:hover{ border-color:var(--amber); }
+  .control-card .control-thumb-wrap{
+    width:100%; aspect-ratio:16/9; background:var(--surface-2); cursor:pointer;
+    overflow:hidden;
+  }
+  .control-card .control-thumb-wrap img{
+    width:100%; height:100%; object-fit:cover; display:block;
+  }
+  .control-card .control-body{
+    padding:14px 16px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .control-card .control-name{ font-weight:600; font-size:14.5px; }
+  .control-card .control-body .btn{ flex:none; padding:9px 14px; font-size:12.5px; }
+  .controles-empty{ color:var(--text-dim); padding:20px 4px; text-align:center; }
+
+  .zoom-box{ max-width:640px; }
+  .zoom-img-wrap{
+    width:100%; border-radius:12px; overflow:hidden; border:1px solid var(--line);
+    margin-bottom:16px; background:var(--surface-2);
+  }
+  .zoom-img-wrap img{ width:100%; display:block; }
+  .zoom-code{
+    white-space:pre-wrap; word-break:break-word;
+    background:var(--surface-2); border:1px solid var(--line); border-radius:10px;
+    padding:14px; font-size:13.5px; color:var(--text); max-height:220px; overflow-y:auto;
+    margin-bottom:4px; font-family:inherit;
+  }
+  .field-group textarea{
+    width:100%; padding:11px 13px; border-radius:8px; border:1px solid var(--line);
+    background:var(--surface-2); color:var(--text); font-size:14px; outline:none;
+    font-family:inherit; resize:vertical;
+  }
+  .field-group textarea:focus{ border-color:var(--amber); }
 </style>
 </head>
 <body>
@@ -462,12 +526,92 @@
   </div>
   <div class="drawer-body">
     <div class="drawer-section">
-      <button class="drawer-upload-btn" id="openUploadBtn">＋ Subir nueva sensibilidad</button>
+      <div class="drawer-label">Navegación</div>
+      <div class="drawer-row" id="navInicio">🏠&nbsp;&nbsp;Inicio</div>
+      <div class="drawer-row" id="navSensi">🎯&nbsp;&nbsp;Sensibilidades</div>
+      <div class="drawer-row" id="navControles">🎮&nbsp;&nbsp;Controles</div>
     </div>
   </div>
 </aside>
 
-<main id="home">
+<!-- Vista: Inicio (bienvenida) -->
+<div class="view" id="inicioView">
+  <div class="inicio-wrap">
+    <div class="mark-big"><img src="https://i.imgur.com/dgFen0f.png" alt="Dravi Sensi"></div>
+    <h1>Bienvenido a <span style="color:var(--amber)">Dravi Sensi</span></h1>
+    <p>Este es tu punto de partida para mejorar en Free Fire. En <b style="color:var(--text)">Sensibilidades</b> buscas tu celular y obtienes ajustes de cámara y mira pensados para tu modelo. En <b style="color:var(--text)">Controles</b> encuentras esquemas de controles compartidos por la comunidad, con imagen y código listos para copiar. Elige una opción en el menú o abajo para empezar.</p>
+    <div class="inicio-actions">
+      <button class="btn primary" id="inicioGoSensi">Ver sensibilidades</button>
+      <button class="btn" id="inicioGoControles">Ver controles</button>
+    </div>
+  </div>
+</div>
+
+<!-- Vista: Controles -->
+<div class="view" id="controlesView">
+  <div class="crumb">
+    <div>
+      <h2>Controles</h2>
+      <span class="n" id="controlesCount"></span>
+    </div>
+  </div>
+  <div class="controles-head-actions">
+    <button class="drawer-upload-btn" id="openUploadControlBtn" style="width:auto;">＋ Subir nuevo control</button>
+  </div>
+  <div class="controles-list" id="controlesList"></div>
+</div>
+
+<!-- Modal: subir nuevo control -->
+<div class="modal-overlay" id="uploadControlModalOverlay">
+  <div class="modal-box">
+    <div id="controlPasswordGate">
+      <h3>Acceso restringido</h3>
+      <div class="modal-sub">Solo Dravi puede subir controles nuevos. Escribe la contraseña para continuar.</div>
+      <div class="field-group">
+        <label>Contraseña</label>
+        <input type="password" id="inputControlPassword" placeholder="Contraseña" autocomplete="off">
+      </div>
+      <div class="form-hint" id="controlPasswordError" style="color:var(--ember); display:none;">Contraseña incorrecta, intenta de nuevo.</div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="cancelControlPassword">Cancelar</button>
+        <button type="button" class="btn primary" id="submitControlPassword">Entrar</button>
+      </div>
+    </div>
+    <div id="uploadControlFormSection" style="display:none;">
+      <h3>Subir nuevo control</h3>
+      <div class="modal-sub">Sube una imagen del control y pega el código o texto del control. Se guarda para toda la comunidad.</div>
+      <form id="uploadControlForm">
+        <div class="field-group">
+          <label>Imagen del control</label>
+          <input type="file" accept="image/*" id="inputControlImage" required>
+        </div>
+        <div class="field-group">
+          <label>Código / texto del control</label>
+          <textarea id="inputControlCode" rows="5" placeholder="Pega aquí el código del control…" required></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn" id="cancelUploadControl">Cancelar</button>
+          <button type="submit" class="btn primary" id="submitUploadControl">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: zoom de control -->
+<div class="modal-overlay" id="controlZoomOverlay">
+  <div class="modal-box zoom-box">
+    <div class="zoom-img-wrap"><img id="zoomControlImg" alt="Control"></div>
+    <div class="modal-sub" style="margin-bottom:8px;">Código del control</div>
+    <div class="zoom-code" id="zoomControlCode"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="closeControlZoom">Cerrar</button>
+      <button type="button" class="btn primary" id="copyControlZoomBtn">Copiar código</button>
+    </div>
+  </div>
+</div>
+
+<main id="home" style="display:none;">
   <section class="hero">
     <div class="eyebrow">FREE FIRE · SENSIBILIDADES POR DISPOSITIVO</div>
     <h1>Encuentra la sensibilidad<br><span class="accent">de tu celular</span> en segundos</h1>
@@ -484,6 +628,9 @@
     <div class="section-head">
       <h2>Elige tu marca</h2>
       <span class="count" id="brandCount"></span>
+    </div>
+    <div style="max-width:1080px;margin:0 auto 16px;display:flex;justify-content:flex-end;">
+      <button class="drawer-upload-btn" id="openUploadBtn" style="width:auto;">＋ Subir nueva sensibilidad</button>
     </div>
     <div class="brand-grid" id="brandGrid"></div>
   </section>
@@ -659,6 +806,54 @@
     return true;
   }
 
+  /* ============ 0b. Cloudinary (imágenes de controles) ============ */
+  const CLOUDINARY_ACCOUNTS = [
+    { cloud_name: "ecgbufts", upload_preset: "Robert" }
+  ];
+  async function uploadImageToCloudinary(file){
+    const acc = CLOUDINARY_ACCOUNTS[0];
+    const url = `https://api.cloudinary.com/v1_1/${acc.cloud_name}/image/upload`;
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("upload_preset", acc.upload_preset);
+    const res = await fetch(url, { method:"POST", body:fd });
+    if (!res.ok) throw new Error("No se pudo subir la imagen");
+    const data = await res.json();
+    return data.secure_url;
+  }
+
+  /* ============ 0c. Controles (persistencia) ============ */
+  const LOCAL_CONTROLES_KEY = "dravisensi-controles";
+  function localGetControles(){
+    try{ return JSON.parse(localStorage.getItem(LOCAL_CONTROLES_KEY) || "[]"); }
+    catch(e){ return []; }
+  }
+  function localSaveControles(list){
+    try{ localStorage.setItem(LOCAL_CONTROLES_KEY, JSON.stringify(list)); }catch(e){}
+  }
+  async function loadControles(){
+    if (firebaseReady && db){
+      try{
+        const snap = await db.collection("controles").orderBy("createdAt","desc").get();
+        const list = [];
+        snap.forEach(doc=> list.push(Object.assign({id:doc.id}, doc.data())));
+        return list;
+      }catch(e){ console.warn("No se pudo leer controles de Firestore, usando datos locales.", e); return localGetControles(); }
+    }
+    return localGetControles();
+  }
+  async function saveControlEntry(entry){
+    entry.createdAt = Date.now();
+    if (firebaseReady && db){
+      try{ await db.collection("controles").add(entry); return true; }
+      catch(e){ console.warn("No se pudo guardar el control en Firestore, se guarda localmente.", e); }
+    }
+    const all = localGetControles();
+    all.unshift(entry);
+    localSaveControles(all);
+    return true;
+  }
+
   /* ============ 1. Base de marcas y modelos ============ */
   let DATA = {
     "iPhone": ["iPhone 6","iPhone 6s","iPhone 7","iPhone 7 Plus","iPhone 8","iPhone 8 Plus","iPhone SE (2020)","iPhone SE (2022)","iPhone X","iPhone XR","iPhone XS","iPhone XS Max","iPhone 11","iPhone 11 Pro","iPhone 11 Pro Max","iPhone 12","iPhone 12 mini","iPhone 12 Pro","iPhone 12 Pro Max","iPhone 13","iPhone 13 mini","iPhone 13 Pro","iPhone 13 Pro Max","iPhone 14","iPhone 14 Plus","iPhone 14 Pro","iPhone 14 Pro Max","iPhone 15","iPhone 15 Plus","iPhone 15 Pro","iPhone 15 Pro Max","iPhone 16","iPhone 16 Plus","iPhone 16 Pro","iPhone 16 Pro Max","iPhone 16e","iPhone 17","iPhone 17 Pro","iPhone 17 Pro Max","iPhone Air"],
@@ -806,12 +1001,17 @@
   const homeEl = document.getElementById("home");
   const modelsView = document.getElementById("modelsView");
   const sensiView = document.getElementById("sensiView");
+  const inicioView = document.getElementById("inicioView");
+  const controlesView = document.getElementById("controlesView");
 
   function showView(view){
     homeEl.style.display = (view==="home") ? "" : "none";
+    inicioView.classList.toggle("show", view==="inicio");
+    controlesView.classList.toggle("show", view==="controles");
     modelsView.classList.toggle("show", view==="models");
     sensiView.classList.toggle("show", view==="sensi");
     window.scrollTo({top:0, behavior:"smooth"});
+    closeDrawer();
   }
 
   let currentBrand = null;
@@ -998,7 +1198,7 @@
     }
   });
 
-  document.getElementById("logo").addEventListener("click", ()=> showView("home"));
+  document.getElementById("logo").addEventListener("click", ()=> showView("inicio"));
 
   /* ============ 7. Tema oscuro / claro (botón en el header) ============ */
   const root = document.documentElement;
@@ -1026,6 +1226,13 @@
   overlay.addEventListener("click", closeDrawer);
 
   document.getElementById("openUploadBtn").addEventListener("click", ()=>{ closeDrawer(); openUploadModal(); });
+
+  /* ============ 8b. Navegación: Inicio / Sensibilidades / Controles ============ */
+  document.getElementById("navInicio").addEventListener("click", ()=> showView("inicio"));
+  document.getElementById("navSensi").addEventListener("click", ()=> showView("home"));
+  document.getElementById("navControles").addEventListener("click", ()=>{ showView("controles"); renderControlesList(); });
+  document.getElementById("inicioGoSensi").addEventListener("click", ()=> showView("home"));
+  document.getElementById("inicioGoControles").addEventListener("click", ()=>{ showView("controles"); renderControlesList(); });
 
   /* ============ 9. Modal: contraseña + subir sensibilidad ============ */
   const UPLOAD_PASSWORD = "dravi"; // contraseña: Dravi (no distingue mayúsculas/minúsculas)
@@ -1161,12 +1368,129 @@
     closeUploadModal();
   });
 
+  /* ============ 9b. Vista y subida de Controles ============ */
+  let CONTROLES = [];
+
+  function renderControlesList(){
+    const list = document.getElementById("controlesList");
+    document.getElementById("controlesCount").textContent = CONTROLES.length + (CONTROLES.length === 1 ? " control compartido" : " controles compartidos");
+    if (CONTROLES.length === 0){
+      list.innerHTML = `<div class="controles-empty">Aún no hay controles compartidos. ¡Sé el primero en subir uno!</div>`;
+      return;
+    }
+    list.innerHTML = "";
+    CONTROLES.forEach((c, i)=>{
+      const card = document.createElement("div");
+      card.className = "control-card";
+      card.innerHTML = `
+        <div class="control-thumb-wrap"><img src="${c.imageUrl}" alt="Control ${i+1}" loading="lazy"></div>
+        <div class="control-body">
+          <span class="control-name">Control ${i+1}</span>
+          <button type="button" class="btn copyControlBtn">Copiar código</button>
+        </div>
+      `;
+      card.querySelector(".control-thumb-wrap").addEventListener("click", ()=> openControlZoom(c));
+      card.querySelector(".copyControlBtn").addEventListener("click", (e)=>{
+        e.stopPropagation();
+        navigator.clipboard?.writeText(c.code || "").then(()=> showToast("Código copiado ✓")).catch(()=>{});
+      });
+      list.appendChild(card);
+    });
+  }
+
+  const controlZoomOverlay = document.getElementById("controlZoomOverlay");
+  function openControlZoom(c){
+    document.getElementById("zoomControlImg").src = c.imageUrl;
+    document.getElementById("zoomControlCode").textContent = c.code || "";
+    controlZoomOverlay.classList.add("show");
+    document.getElementById("copyControlZoomBtn").onclick = ()=>{
+      navigator.clipboard?.writeText(c.code || "").then(()=> showToast("Código copiado ✓")).catch(()=>{});
+    };
+  }
+  function closeControlZoom(){ controlZoomOverlay.classList.remove("show"); }
+  document.getElementById("closeControlZoom").addEventListener("click", closeControlZoom);
+  controlZoomOverlay.addEventListener("click", (e)=>{ if (e.target === controlZoomOverlay) closeControlZoom(); });
+
+  document.getElementById("openUploadControlBtn").addEventListener("click", openUploadControlModal);
+
+  const uploadControlOverlay = document.getElementById("uploadControlModalOverlay");
+  const controlPasswordGate = document.getElementById("controlPasswordGate");
+  const uploadControlFormSection = document.getElementById("uploadControlFormSection");
+  const inputControlPassword = document.getElementById("inputControlPassword");
+  const controlPasswordError = document.getElementById("controlPasswordError");
+
+  function openUploadControlModal(){
+    uploadControlOverlay.classList.add("show");
+    if (unlocked){
+      controlPasswordGate.style.display = "none";
+      uploadControlFormSection.style.display = "";
+    } else {
+      controlPasswordGate.style.display = "";
+      uploadControlFormSection.style.display = "none";
+      controlPasswordError.style.display = "none";
+      inputControlPassword.value = "";
+      setTimeout(()=> inputControlPassword.focus(), 50);
+    }
+  }
+  function closeUploadControlModal(){
+    uploadControlOverlay.classList.remove("show");
+    document.getElementById("uploadControlForm").reset();
+  }
+  document.getElementById("cancelUploadControl").addEventListener("click", closeUploadControlModal);
+  document.getElementById("cancelControlPassword").addEventListener("click", closeUploadControlModal);
+  uploadControlOverlay.addEventListener("click", (e)=>{ if (e.target === uploadControlOverlay) closeUploadControlModal(); });
+
+  function tryControlPassword(){
+    const val = (inputControlPassword.value || "").trim().toLowerCase();
+    if (val === UPLOAD_PASSWORD){
+      unlocked = true;
+      try{ sessionStorage.setItem("dravisensi-unlocked", "1"); }catch(e){}
+      controlPasswordGate.style.display = "none";
+      uploadControlFormSection.style.display = "";
+    } else {
+      controlPasswordError.style.display = "";
+      inputControlPassword.value = "";
+      inputControlPassword.focus();
+    }
+  }
+  document.getElementById("submitControlPassword").addEventListener("click", tryControlPassword);
+  inputControlPassword.addEventListener("keydown", (e)=>{ if (e.key === "Enter"){ e.preventDefault(); tryControlPassword(); } });
+
+  document.getElementById("uploadControlForm").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+    const fileInput = document.getElementById("inputControlImage");
+    const code = document.getElementById("inputControlCode").value.trim();
+    const file = fileInput.files && fileInput.files[0];
+    if (!file){ alert("Elige una imagen del control."); return; }
+    if (!code){ alert("Escribe el código o texto del control."); return; }
+
+    const submitBtn = document.getElementById("submitUploadControl");
+    submitBtn.disabled = true; submitBtn.textContent = "Subiendo…";
+    try{
+      const imageUrl = await uploadImageToCloudinary(file);
+      await saveControlEntry({ imageUrl, code });
+      CONTROLES.unshift({ imageUrl, code, createdAt: Date.now() });
+      renderControlesList();
+      showToast("Control guardado ✓");
+      closeUploadControlModal();
+    }catch(err){
+      console.warn(err);
+      alert("No se pudo subir el control. Revisa tu conexión e inténtalo de nuevo.");
+    }
+    submitBtn.disabled = false; submitBtn.textContent = "Guardar";
+  });
+
   /* ============ 10. Arranque ============ */
   renderBrandGrid();
+  showView("inicio");
   loadCustomData().then(data=>{
     applyCustomData(data);
     rebuildSearchIndex();
     renderBrandGrid();
+  });
+  loadControles().then(list=>{
+    CONTROLES = list;
+    renderControlesList();
   });
 
 })();
