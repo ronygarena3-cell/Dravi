@@ -7,11 +7,16 @@
 <meta name="description" content="Encuentra la sensibilidad de Free Fire ideal para tu celular. Busca tu modelo entre cientos de dispositivos iPhone, Samsung, Xiaomi, Poco, Huawei y más, y consigue ajustes pensados para mover cámara con fluidez y subir la mira con precisión.">
 <meta name="theme-color" content="#0B0D10">
 <meta name="google-site-verification" content="L7J4snwpuSdvXFQ3aX8XT1d-HqebBgs9teXXsNwD-YU" />
-<link rel="icon" href="https://i.imgur.com/dgFen0f.png" type="image/png">
-<link rel="apple-touch-icon" href="https://i.imgur.com/dgFen0f.png">
+<meta property="og:title" content="Dravi Sensi — Sensibilidades de Free Fire para tu celular">
+<meta property="og:description" content="Encuentra la sensibilidad de Free Fire ideal para tu celular entre cientos de dispositivos.">
+<meta property="og:image" content="https://i.imgur.com/z0Xis9n.jpeg">
+<meta property="og:type" content="website">
+<link rel="icon" href="https://i.imgur.com/z0Xis9n.jpeg" type="image/jpeg">
+<link rel="apple-touch-icon" href="https://i.imgur.com/z0Xis9n.jpeg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root{
     --bg:#0B0D10;
@@ -221,7 +226,9 @@
   .search-results .row:hover{ background:var(--surface-2); }
   .search-results .row .m{ font-weight:600; font-size:14.5px; }
   .search-results .row .b{ font-size:12px; color:var(--text-dim); }
-  .search-results .empty{ padding:16px 18px; color:var(--text-dim); font-size:14px; }
+  .search-results .empty{ padding:16px 18px 6px; color:var(--text-dim); font-size:14px; }
+  .search-results .empty-action{ padding:6px 18px 16px; }
+  .search-results .empty-action .btn{ width:100%; justify-content:center; }
 
   /* ---------- brand grid ---------- */
   section.brands{ padding:20px 20px 10px; }
@@ -476,6 +483,7 @@
     padding:14px 16px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;
   }
   .control-card .control-name{ font-weight:600; font-size:14.5px; }
+  .control-card .control-body-actions{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
   .control-card .control-body .btn{ flex:none; padding:9px 14px; font-size:12.5px; }
   .controles-empty{ color:var(--text-dim); padding:20px 4px; text-align:center; }
 
@@ -504,7 +512,7 @@
 <header class="top">
   <div class="top-inner">
     <div class="brand" id="logo">
-      <span class="mark"><img src="https://i.imgur.com/dgFen0f.png" alt="Dravi Sensi"></span>
+      <span class="mark"><img src="https://i.imgur.com/z0Xis9n.jpeg" alt="Dravi Sensi"></span>
       <span>DRAVI <span class="sub">SENSI</span></span>
     </div>
     <div style="display:flex; align-items:center; gap:8px;">
@@ -537,7 +545,7 @@
 <!-- Vista: Inicio (bienvenida) -->
 <div class="view" id="inicioView">
   <div class="inicio-wrap">
-    <div class="mark-big"><img src="https://i.imgur.com/dgFen0f.png" alt="Dravi Sensi"></div>
+    <div class="mark-big"><img src="https://i.imgur.com/z0Xis9n.jpeg" alt="Dravi Sensi"></div>
     <h1>Bienvenido a <span style="color:var(--amber)">Dravi Sensi</span></h1>
     <p>Este es tu punto de partida para mejorar en Free Fire. En <b style="color:var(--text)">Sensibilidades</b> buscas tu celular y obtienes ajustes de cámara y mira pensados para tu modelo. En <b style="color:var(--text)">Controles</b> encuentras esquemas de controles compartidos por la comunidad, con imagen y código listos para copiar. Elige una opción en el menú o abajo para empezar.</p>
     <div class="inicio-actions">
@@ -606,6 +614,7 @@
     <div class="zoom-code" id="zoomControlCode"></div>
     <div class="modal-actions">
       <button type="button" class="btn" id="closeControlZoom">Cerrar</button>
+      <button type="button" class="btn" id="screenshotControlZoomBtn">📸 Capturar</button>
       <button type="button" class="btn primary" id="copyControlZoomBtn">Copiar código</button>
     </div>
   </div>
@@ -1105,6 +1114,9 @@
         <button class="btn" id="copyBtn">Copiar valores</button>
         <button class="btn primary" id="backBtn2">${opts.backLabel}</button>
       </div>
+      <div class="sensi-actions" style="margin-top:10px;">
+        <button class="btn" id="screenshotSensiBtn">📸 Descargar captura</button>
+      </div>
       <div class="copy-note" id="copyNote"></div>
     `;
     showView("sensi");
@@ -1112,6 +1124,7 @@
       card.querySelectorAll(".bar-fill").forEach(el=>{ el.style.width = el.dataset.w + "%"; });
     });
     document.getElementById("backBtn2").addEventListener("click", opts.onBack);
+    document.getElementById("screenshotSensiBtn").addEventListener("click", downloadSensiScreenshot);
     document.getElementById("copyBtn").addEventListener("click", ()=>{
       const text = `${opts.title} — Sensibilidad Free Fire\n`+FIELD_ORDER.map(f=>`${FIELD_LABEL[f]}: ${opts.values[f]}/200`).join("\n");
       navigator.clipboard?.writeText(text).then(()=>{
@@ -1161,13 +1174,45 @@
   }
   rebuildSearchIndex();
 
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, (c)=>({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+  }
+
+  // Crea (si no existía) y abre una sensibilidad "general" para lo que la persona haya escrito,
+  // cuando su marca/modelo no aparece en la web.
+  function createGeneralSensi(query){
+    const raw = (query || "").trim();
+    if (!raw) return;
+    let brand = BRAND_ORDER.find(b => b.toLowerCase() === raw.toLowerCase());
+    const isNewBrand = !brand;
+    if (!brand) brand = raw;
+    const model = "Sensibilidad General";
+    if (!DATA[brand]){ DATA[brand] = []; BRAND_ORDER.push(brand); }
+    if (!DATA[brand].includes(model)) DATA[brand].push(model);
+    rebuildSearchIndex();
+    renderBrandGrid();
+    searchInput.value = "";
+    searchResults.classList.remove("show");
+    currentBrand = brand;
+    currentModelList = DATA[brand].map(m=>({brand, model:m}));
+    openSensi(brand, model);
+    showToast(isNewBrand ? `Creamos "${brand}" con una sensibilidad general ✓` : "Sensibilidad general generada ✓");
+  }
+
   function renderSearch(q){
     if (!q){ searchResults.classList.remove("show"); searchResults.innerHTML=""; return; }
     const ql = q.toLowerCase();
     const matches = allDevices.filter(d => d.model.toLowerCase().includes(ql) || d.brand.toLowerCase().includes(ql)).slice(0,8);
     searchResults.innerHTML = "";
     if (matches.length === 0){
-      searchResults.innerHTML = `<div class="empty">Sin resultados. Prueba con el nombre completo de tu marca, por ejemplo "Samsung" o "Redmi".</div>`;
+      const safeQ = escapeHtml(q);
+      searchResults.innerHTML = `
+        <div class="empty">No encontramos "${safeQ}" entre las marcas y modelos de la web.</div>
+        <div class="empty-action">
+          <button type="button" class="btn primary" id="genGeneralBtn">Usar sensibilidad general para "${safeQ}"</button>
+        </div>
+      `;
+      document.getElementById("genGeneralBtn").addEventListener("click", ()=> createGeneralSensi(q));
     } else {
       matches.forEach(d=>{
         const row = document.createElement("div");
@@ -1317,6 +1362,95 @@
     setTimeout(()=> toast.classList.remove("show"), 2600);
   }
 
+  /* ============ 9c. Capturas con marca de agua ============ */
+  function loadImageEl(src, useCORS){
+    return new Promise((resolve, reject)=>{
+      const img = new Image();
+      if (useCORS) img.crossOrigin = "anonymous";
+      img.onload = ()=> resolve(img);
+      img.onerror = ()=> reject(new Error("No se pudo cargar la imagen"));
+      img.src = src;
+    });
+  }
+
+  function drawWatermark(ctx, w, h){
+    ctx.save();
+    const bandH = Math.max(34, Math.round(h*0.085));
+    ctx.fillStyle = "rgba(11,13,16,.6)";
+    ctx.fillRect(0, h-bandH, w, bandH);
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#FFB300";
+    ctx.font = `bold ${Math.round(bandH*0.4)}px Rajdhani, Arial, sans-serif`;
+    ctx.textAlign = "left";
+    ctx.fillText("Dravi Sensi", 16, h - bandH/2);
+    ctx.fillStyle = "rgba(232,234,237,.85)";
+    ctx.font = `${Math.round(bandH*0.26)}px Inter, Arial, sans-serif`;
+    ctx.textAlign = "right";
+    ctx.fillText("Free Fire · configuración no oficial", w-16, h - bandH/2);
+    ctx.restore();
+
+    ctx.save();
+    ctx.globalAlpha = 0.09;
+    ctx.fillStyle = "#FFFFFF";
+    const fontSize = Math.max(18, Math.round(w*0.045));
+    ctx.font = `bold ${fontSize}px Rajdhani, Arial, sans-serif`;
+    ctx.translate(w/2, h/2);
+    ctx.rotate(-Math.PI/9);
+    const label = "DRAVI SENSI";
+    const stepX = ctx.measureText(label).width + 70;
+    const stepY = fontSize * 3.2;
+    for (let y=-h; y<h; y+=stepY){
+      for (let x=-w; x<w; x+=stepX){
+        ctx.fillText(label, x, y);
+      }
+    }
+    ctx.restore();
+  }
+
+  function downloadCanvas(canvas, filename){
+    const link = document.createElement("a");
+    link.download = filename;
+    link.href = canvas.toDataURL("image/png");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
+
+  async function downloadControlScreenshot(imageUrl){
+    try{
+      const img = await loadImageEl(imageUrl, true);
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth || img.width;
+      canvas.height = img.naturalHeight || img.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      drawWatermark(ctx, canvas.width, canvas.height);
+      downloadCanvas(canvas, "control-dravisensi.png");
+      showToast("Captura del control descargada ✓");
+    }catch(err){
+      console.warn(err);
+      showToast("No se pudo generar la captura, intenta de nuevo");
+    }
+  }
+
+  async function downloadSensiScreenshot(){
+    if (typeof html2canvas !== "function"){
+      showToast("No se pudo generar la captura, intenta de nuevo");
+      return;
+    }
+    const card = document.getElementById("sensiCard");
+    try{
+      const bg = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || "#0B0D10";
+      const canvas = await html2canvas(card, { backgroundColor: bg, scale: 2, useCORS: true });
+      drawWatermark(canvas.getContext("2d"), canvas.width, canvas.height);
+      downloadCanvas(canvas, "sensibilidad-dravisensi.png");
+      showToast("Captura de la sensibilidad descargada ✓");
+    }catch(err){
+      console.warn(err);
+      showToast("No se pudo generar la captura, intenta de nuevo");
+    }
+  }
+
   document.getElementById("uploadForm").addEventListener("submit", async (e)=>{
     e.preventDefault();
     const vals = {};
@@ -1386,10 +1520,17 @@
         <div class="control-thumb-wrap"><img src="${c.imageUrl}" alt="Control ${i+1}" loading="lazy"></div>
         <div class="control-body">
           <span class="control-name">Control ${i+1}</span>
-          <button type="button" class="btn copyControlBtn">Copiar código</button>
+          <div class="control-body-actions">
+            <button type="button" class="btn shotControlBtn">📸 Capturar</button>
+            <button type="button" class="btn copyControlBtn">Copiar código</button>
+          </div>
         </div>
       `;
       card.querySelector(".control-thumb-wrap").addEventListener("click", ()=> openControlZoom(c));
+      card.querySelector(".shotControlBtn").addEventListener("click", (e)=>{
+        e.stopPropagation();
+        downloadControlScreenshot(c.imageUrl);
+      });
       card.querySelector(".copyControlBtn").addEventListener("click", (e)=>{
         e.stopPropagation();
         navigator.clipboard?.writeText(c.code || "").then(()=> showToast("Código copiado ✓")).catch(()=>{});
@@ -1406,6 +1547,7 @@
     document.getElementById("copyControlZoomBtn").onclick = ()=>{
       navigator.clipboard?.writeText(c.code || "").then(()=> showToast("Código copiado ✓")).catch(()=>{});
     };
+    document.getElementById("screenshotControlZoomBtn").onclick = ()=> downloadControlScreenshot(c.imageUrl);
   }
   function closeControlZoom(){ controlZoomOverlay.classList.remove("show"); }
   document.getElementById("closeControlZoom").addEventListener("click", closeControlZoom);
